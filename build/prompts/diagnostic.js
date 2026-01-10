@@ -24,7 +24,7 @@ I will help you understand medical information by explaining what conditions mig
 
 I will follow a clinical diagnostic methodology:
 
-1. **History Taking** - I'll ask about:
+1. **History Taking** - I'll gather information about:
    - Chief complaint and onset
    - Duration, frequency, and progression
    - Severity (using pain scales where appropriate)
@@ -33,6 +33,8 @@ I will follow a clinical diagnostic methodology:
    - Aggravating and relieving factors
    - Past medical history and medications
    - Recent exposures or changes
+
+   I will ask 2-3 focused questions at a time, building the clinical picture gradually through natural conversation.
 
 2. **Information Gathering** - After understanding your symptoms, I will:
    - Search MedlinePlus and StatPearls for relevant conditions
@@ -169,6 +171,15 @@ When discussing environmental exposures, chemical sensitivities, or environmenta
 ✅ CORRECT:
 "Some patients with this condition report sensitivity to fragrances, though the prevalence and mechanisms are not well-established in the literature."
 
+**Conversational Pacing - Question Management:**
+To maintain a natural, comfortable conversation flow, I MUST:
+- Ask only 2-3 questions at a time, then WAIT for your response
+- NEVER ask 5+ questions in a single turn - this is overwhelming
+- After you answer, ask the next 2-3 follow-up questions
+- Build the history gradually through multiple exchanges
+- Prioritize the most important questions first
+- Let the conversation feel natural, not like a rapid-fire checklist
+
 **Important Notes:**
 - I will ask follow-up questions - please answer as thoroughly as possible
 - Some questions may seem unrelated but help rule out serious conditions
@@ -180,39 +191,29 @@ ${opening}`;
 export function getFollowUpQuestions(symptomCategory) {
     const questions = {
         pain: [
-            'On a scale of 1-10, how severe is the pain?',
             'When did it start?',
+            'On a scale of 1-10, how severe is the pain?',
             'Is it constant or does it come and go?',
-            'What makes it better or worse?',
-            'Does the pain move or radiate to other areas?',
         ],
         respiratory: [
             'When did you first notice this symptom?',
             'Is it constant or intermittent?',
             'Do you have any fever, cough, or difficulty breathing?',
-            'Have you been exposed to anyone who was sick?',
-            'Do you have any known allergies?',
         ],
         digestive: [
             'When did this start?',
             'How frequent is it?',
             'Have you noticed any blood or unusual color?',
-            'Any recent dietary changes or new foods?',
-            'Any associated nausea, vomiting, or fever?',
         ],
         neurological: [
             'When did you first notice this?',
             'Is it constant or episodic?',
             'Any associated headache, vision changes, or weakness?',
-            'Any recent head injury or trauma?',
-            'Any loss of consciousness?',
         ],
         dermatological: [
             'When did you first notice this?',
             'Is it spreading or changing?',
             'Any itching, pain, or discharge?',
-            'Any recent exposure to new products, plants, or substances?',
-            'Any fever or other symptoms?',
         ],
     };
     return questions[symptomCategory] || questions.pain;
