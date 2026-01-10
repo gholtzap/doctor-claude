@@ -77,10 +77,10 @@ Engages Claude in a systematic medical consultation process. Claude will:
 **Usage in Claude Code:**
 ```bash
 # Invoke the diagnostic consultation prompt
-"Use the diagnostic_consultation prompt"
+/mcp__doctor_claude__diagnostic_consultation
 
-# Or with a chief complaint
-"Use diagnostic_consultation with chief_complaint: I have a persistent cough"
+# With a chief complaint (pass as first argument)
+/mcp__doctor_claude__diagnostic_consultation "I have a persistent cough"
 ```
 
 **How it works:**
