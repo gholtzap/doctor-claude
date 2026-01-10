@@ -62,8 +62,15 @@ Engages Claude in a systematic medical consultation process. Claude will:
 - Ask detailed questions about symptoms
 - Search and read medical literature
 - Perform differential analysis
-- Provide educational information
+- Provide educational information using appropriate clinical uncertainty
 - Recommend appropriate care
+
+**Clinical Communication Standards:**
+- Uses probabilistic language ("may suggest", "consistent with", "more likely")
+- Avoids absolute statements and overconfident predictions
+- Acknowledges uncertainty and limits of remote assessment
+- Emphasizes need for professional testing and evaluation
+- Presents differential diagnoses rather than single conclusions
 
 **Important:** This is for educational purposes only. Claude will provide disclaimers and emphasize the need for professional medical care.
 

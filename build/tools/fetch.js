@@ -8,7 +8,9 @@ const ALLOWED_DOMAINS = [
     'medlineplus.gov',
     'ncbi.nlm.nih.gov'
 ];
-
+/**
+ * Validate that a URL is from an allowed domain
+ */
 function validateDomain(url) {
     let hostname;
     try {
@@ -23,7 +25,9 @@ function validateDomain(url) {
         throw new Error(`Domain not allowed: ${hostname}. Only ${ALLOWED_DOMAINS.join(', ')} are permitted.`);
     }
 }
-
+/**
+ * Determine the source from the URL
+ */
 function getSourceFromUrl(url) {
     const hostname = new URL(url).hostname.toLowerCase();
     if (hostname.includes('medlineplus.gov')) {
@@ -36,7 +40,9 @@ function getSourceFromUrl(url) {
 }
 export async function fetchMedicalArticle(args) {
     const { url } = args;
+    // Validate domain
     validateDomain(url);
+    // Determine source
     const source = getSourceFromUrl(url);
     try {
         if (source === 'medlineplus') {

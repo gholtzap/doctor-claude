@@ -11,6 +11,7 @@ export async function searchMedicalInfo(args) {
     const { query, source } = args;
     const results = [];
     try {
+        // Search MedlinePlus
         if (source === 'medlineplus' || source === 'both') {
             const medlinePlusResults = await searchMedlinePlus(query);
             results.push(...medlinePlusResults.map((r) => ({
@@ -23,6 +24,7 @@ export async function searchMedicalInfo(args) {
                 }
             })));
         }
+        // Search StatPearls
         if (source === 'statpearls' || source === 'both') {
             const statPearlsResults = await searchStatPearls(query);
             results.push(...statPearlsResults.map((r) => ({

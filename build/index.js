@@ -87,6 +87,7 @@ class DoctorClaudeServer {
                 else if (name === 'fetch_medical_article') {
                     const validatedArgs = FetchMedicalArticleSchema.parse(args);
                     const article = await fetchMedicalArticle(validatedArgs);
+                    // Format the article for readability
                     const formattedArticle = this.formatArticle(article);
                     return {
                         content: [
@@ -133,6 +134,7 @@ class DoctorClaudeServer {
         return formatted;
     }
     setupPromptHandlers() {
+        // List available prompts
         this.server.setRequestHandler(ListPromptsRequestSchema, async () => ({
             prompts: [
                 {
@@ -148,6 +150,7 @@ class DoctorClaudeServer {
                 },
             ],
         }));
+        // Handle prompt requests
         this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
             const { name, arguments: args } = request.params;
             if (name === 'diagnostic_consultation') {
@@ -191,6 +194,7 @@ class DoctorClaudeServer {
         console.error('Doctor Claude MCP server running on stdio');
     }
 }
+// Start the server
 const server = new DoctorClaudeServer();
 server.run().catch((error) => {
     console.error('Fatal error running server:', error);
