@@ -1,0 +1,144 @@
+import * as cheerio from 'cheerio';
+
+export interface MedlinePlusSearchResult {
+  title: string;
+  url: string;
+  description: string;
+  type: string;
+}
+
+export interface MedlinePlusArticle {
+  title: string;
+  url: string;
+  sections: {
+    name: string;
+    content: string;
+  }[];
+}
+
+/**
+ * Search MedlinePlus for medical information
+ */
+export async function searchMedlinePlus(query: string): Promise<MedlinePlusSearchResult[]> {
+  const searchUrl = `https://vsearch.nlm.nih.gov/vivisimo/cgi-bin/query-meta?v%3Aproject=medlineplus&v%3Asources=medlineplus-bundle&query=${encodeURIComponent(query)}`;
+
+  const response = await fetch(searchUrl);
+  const html = await response.text();
+  const $ = cheerio.load(html);
+
+  const results: MedlinePlusSearchResult[] = [];
+
+  // Parse search results from ordered list
+  $('ol li').each((_, elem) => {
+    const $result = $(elem);
+    const $titleLink = $result.find('a.title');
+    const title = $titleLink.text().trim();
+    const href = $titleLink.attr('href');
+    const description = $result.find('.document-body').text().trim();
+
+    // Extract actual URL from redirect
+    if (href && title) {
+      let actualUrl = '';
+      let type = 'Article';
+
+      // Extract the actual destination URL from the redirect
+      if (href.includes('url=')) {
+        const urlMatch = href.match(/url=([^&]+)/);
+        if (urlMatch) {
+          actualUrl = decodeURIComponent(urlMatch[1]);
+
+          // Determine type from URL
+          if (actualUrl.includes('/ency/article/')) {
+            type = 'Medical Encyclopedia';
+          } else if (actualUrl.includes('/ency/patientinstructions/')) {
+            type = 'Patient Instructions';
+          } else if (actualUrl.includes('/genetics/')) {
+            type = 'Genetics';
+          } else {
+            type = 'Health Topic';
+          }
+        }
+      }
+
+      if (actualUrl) {
+        results.push({
+          title,
+          url: actualUrl,
+          description: description || '',
+          type
+        });
+      }
+    }
+  });
+
+  return results;
+}
+
+/**
+ * Fetch and parse a MedlinePlus article
+ */
+export async function fetchMedlinePlusArticle(url: string): Promise<MedlinePlusArticle> {
+  const response = await fetch(url);
+  const html = await response.text();
+  const $ = cheerio.load(html);
+
+  // Get title
+  const title = $('h1').first().text().trim() || $('title').text().trim();
+
+  const sections: { name: string; content: string }[] = [];
+
+  // For encyclopedia articles
+  if (url.includes('/ency/article/')) {
+    // Extract main content sections
+    $('#ency_summary').each((_, elem) => {
+      sections.push({
+        name: 'Summary',
+        content: $(elem).text().trim()
+      });
+    });
+
+    // Extract all article sections
+    $('article section, #article section').each((_, elem) => {
+      const $section = $(elem);
+      const sectionTitle = $section.find('h2, h3').first().text().trim();
+
+      // Get content without the heading
+      const $clone = $section.clone();
+      $clone.find('h2, h3').first().remove();
+      const content = $clone.text().trim();
+
+      if (sectionTitle && content) {
+        sections.push({
+          name: sectionTitle,
+          content
+        });
+      }
+    });
+
+    // Fallback: if no sections found, try to get main content
+    if (sections.length === 0) {
+      const mainContent = $('#ency_summary, #mplus-content, .main-content').text().trim();
+      if (mainContent) {
+        sections.push({
+          name: 'Content',
+          content: mainContent
+        });
+      }
+    }
+  } else {
+    // For health topics and other pages
+    const mainContent = $('#topic-summary, .page-content, #mplus-content').text().trim();
+    if (mainContent) {
+      sections.push({
+        name: 'Summary',
+        content: mainContent
+      });
+    }
+  }
+
+  return {
+    title,
+    url,
+    sections
+  };
+}
