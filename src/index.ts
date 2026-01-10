@@ -55,7 +55,8 @@ class DoctorClaudeServer {
           name: 'search_medical_info',
           description:
             'Search for peer-reviewed medical information from MedlinePlus and StatPearls (NCBI). ' +
-            'Returns a list of relevant articles with titles, URLs, and descriptions.',
+            'Returns a list of relevant articles with titles, URLs, and descriptions. ' +
+            'This tool provides EDUCATIONAL information only - not medical advice, diagnoses, or treatment recommendations.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -77,7 +78,8 @@ class DoctorClaudeServer {
           name: 'fetch_medical_article',
           description:
             'Fetch and parse the full content of a medical article from MedlinePlus or StatPearls. ' +
-            'Only URLs from medlineplus.gov and ncbi.nlm.nih.gov are allowed for security.',
+            'Only URLs from medlineplus.gov and ncbi.nlm.nih.gov are allowed for security. ' +
+            'This tool provides EDUCATIONAL information only - not medical advice, diagnoses, or treatment recommendations.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -170,7 +172,7 @@ class DoctorClaudeServer {
       prompts: [
         {
           name: 'diagnostic_consultation',
-          description: 'Engage in a medical diagnostic consultation, asking questions and researching conditions',
+          description: 'Engage in an educational medical consultation to help understand symptoms and conditions. Provides information about possible conditions and common clinical approaches, but does not prescribe treatments or provide medical advice.',
           arguments: [
             {
               name: 'chief_complaint',
