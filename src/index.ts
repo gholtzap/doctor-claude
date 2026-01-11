@@ -56,13 +56,17 @@ class DoctorClaudeServer {
           description:
             'Search for peer-reviewed medical information from MedlinePlus and StatPearls (NCBI). ' +
             'Returns a list of relevant articles with titles, URLs, and descriptions. ' +
+            'IMPORTANT: Use simple, focused queries with 1-3 key medical terms for best results. ' +
+            'Avoid overly complex multi-word queries. If searching for specific patterns or presentations, ' +
+            'use the core condition/topic (e.g., "child abuse burns" instead of "geometric patterned skin lesions burns infants child abuse"). ' +
+            'The tool will automatically try simpler queries if the initial search returns no results. ' +
             'This tool provides EDUCATIONAL information only - not medical advice, diagnoses, or treatment recommendations.',
           inputSchema: {
             type: 'object',
             properties: {
               query: {
                 type: 'string',
-                description: 'The medical topic or condition to search for',
+                description: 'The medical topic or condition to search for. Keep it simple with 1-3 key terms for best results.',
               },
               source: {
                 type: 'string',
