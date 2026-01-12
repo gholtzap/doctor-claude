@@ -14,7 +14,7 @@ npm run build
 
 2. add to claude code:
 ```bash
-claude mcp add --transport stdio doctor-claude -- node /Users/gmh/dev/doctor-claude/build/index.js
+claude mcp add --transport stdio doctor-claude -- node $(pwd)/build/index.js
 ```
 
 ## Tools
