@@ -17,6 +17,20 @@ npm run build
 claude mcp add --transport stdio doctor-claude -- node $(pwd)/build/index.js
 ```
 
+## Prompts
+
+### diagnostic_consultation
+
+Engages Claude in a systematic medical consultation process. 
+
+**Important:** This is for educational purposes only. Claude will provide disclaimers and emphasize the need for professional medical care.
+
+**Usage in Claude Code:**
+```bash
+/mcp__doctor_claude__diagnostic_consultation
+```
+
+
 ## Tools
 
 ### search_medical_info
@@ -52,20 +66,3 @@ Fetch and parse the full content of a medical article.
   "url": "https://medlineplus.gov/ency/article/000813.htm"
 }
 ```
-
-## Prompts
-
-### diagnostic_consultation
-
-Engages Claude in a systematic medical consultation process. 
-
-**Important:** This is for educational purposes only. Claude will provide disclaimers and emphasize the need for professional medical care.
-
-**Usage in Claude Code:**
-```bash
-/mcp__doctor_claude__diagnostic_consultation
-```
-
-## License
-
-MIT
