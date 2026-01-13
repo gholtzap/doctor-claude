@@ -1,4 +1,4 @@
-import { CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema, TIMIInputSchema, MELDInputSchema, } from './schemas.js';
+import { CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema, TIMIInputSchema, MELDInputSchema, GAD7InputSchema, } from './schemas.js';
 import { calculateCURB65 } from './calculators/curb65.js';
 import { calculateCentor } from './calculators/centor.js';
 import { calculateWellsDVT } from './calculators/wells-dvt.js';
@@ -14,6 +14,7 @@ import { calculateSOFA } from './calculators/sofa.js';
 import { calculatePERC } from './calculators/perc.js';
 import { calculateTIMI } from './calculators/timi.js';
 import { calculateMELD } from './calculators/meld.js';
+import { calculateGAD7 } from './calculators/gad7.js';
 const calculatorMap = {
     curb65: {
         schema: CURB65InputSchema,
@@ -74,6 +75,10 @@ const calculatorMap = {
     meld: {
         schema: MELDInputSchema,
         calculate: calculateMELD,
+    },
+    gad7: {
+        schema: GAD7InputSchema,
+        calculate: calculateGAD7,
     },
 };
 export function calculateClinicalScore(args) {

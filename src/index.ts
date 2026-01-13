@@ -190,7 +190,7 @@ class DoctorClaudeServer {
           name: 'calculate_clinical_score',
           description:
             'Calculate clinical decision rule scores to help assess disease severity, risk stratification, and guide clinical decision-making. ' +
-            'Supports multiple evidence-based calculators: CURB-65 (pneumonia severity), Centor Score (strep throat probability), Wells DVT (deep vein thrombosis risk), Wells PE (pulmonary embolism risk), HEART Score (chest pain cardiac risk), CHA2DS2-VASc (stroke risk in atrial fibrillation), GCS (Glasgow Coma Scale for consciousness assessment), qSOFA (sepsis screening), Alvarado Score (appendicitis), Glasgow-Blatchford Score (upper GI bleeding risk), NIHSS (NIH Stroke Scale for stroke severity). ' +
+            'Supports multiple evidence-based calculators: CURB-65 (pneumonia severity), Centor Score (strep throat probability), Wells DVT (deep vein thrombosis risk), Wells PE (pulmonary embolism risk), HEART Score (chest pain cardiac risk), CHA2DS2-VASc (stroke risk in atrial fibrillation), GCS (Glasgow Coma Scale for consciousness assessment), qSOFA (sepsis screening), Alvarado Score (appendicitis), Glasgow-Blatchford Score (upper GI bleeding risk), NIHSS (NIH Stroke Scale for stroke severity), SOFA (Sequential Organ Failure Assessment), PERC (Pulmonary Embolism Rule-out Criteria), TIMI (Thrombolysis in Myocardial Infarction Risk Score), MELD (Model for End-Stage Liver Disease), GAD-7 (Generalized Anxiety Disorder-7). ' +
             'These tools help determine appropriate level of care (outpatient vs hospital) and testing strategies. ' +
             'This tool provides EDUCATIONAL information only - all clinical decisions must be made by qualified healthcare providers.',
           inputSchema: {
@@ -198,8 +198,8 @@ class DoctorClaudeServer {
             properties: {
               calculator: {
                 type: 'string',
-                enum: ['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss'],
-                description: 'Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening), alvarado (appendicitis risk), glasgow_blatchford (upper GI bleeding risk), nihss (NIH Stroke Scale for stroke severity)',
+                enum: ['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa', 'perc', 'timi', 'meld', 'gad7'],
+                description: 'Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening), alvarado (appendicitis risk), glasgow_blatchford (upper GI bleeding risk), nihss (NIH Stroke Scale for stroke severity), sofa (Sequential Organ Failure Assessment for ICU mortality), perc (Pulmonary Embolism Rule-out Criteria), timi (TIMI Risk Score for NSTEMI/UA), meld (Model for End-Stage Liver Disease), gad7 (Generalized Anxiety Disorder-7 for anxiety screening)',
               },
               inputs: {
                 type: 'object',

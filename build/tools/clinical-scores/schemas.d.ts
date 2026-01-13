@@ -395,8 +395,33 @@ export declare const MELDInputSchema: z.ZodObject<{
     inr: number;
     dialysis: boolean;
 }>;
+export declare const GAD7InputSchema: z.ZodObject<{
+    nervous: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+    stopWorrying: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+    worryingTooMuch: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+    troubleRelaxing: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+    restless: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+    easilyAnnoyed: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+    feelingAfraid: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+}, "strip", z.ZodTypeAny, {
+    nervous: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    stopWorrying: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    worryingTooMuch: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    troubleRelaxing: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+}, {
+    nervous: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    stopWorrying: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    worryingTooMuch: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    troubleRelaxing: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+}>;
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa", "perc", "timi", "meld"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa", "perc", "timi", "meld", "gad7"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -778,9 +803,33 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         creatinine: number;
         inr: number;
         dialysis: boolean;
+    }>, z.ZodObject<{
+        nervous: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+        stopWorrying: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+        worryingTooMuch: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+        troubleRelaxing: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+        restless: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+        easilyAnnoyed: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+        feelingAfraid: z.ZodEnum<["not_at_all", "several_days", "more_than_half", "nearly_every_day"]>;
+    }, "strip", z.ZodTypeAny, {
+        nervous: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        stopWorrying: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        worryingTooMuch: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        troubleRelaxing: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    }, {
+        nervous: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        stopWorrying: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        worryingTooMuch: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        troubleRelaxing: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld" | "gad7";
     inputs: {
         age: number;
         confusion: boolean;
@@ -906,9 +955,17 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         creatinine: number;
         inr: number;
         dialysis: boolean;
+    } | {
+        nervous: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        stopWorrying: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        worryingTooMuch: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        troubleRelaxing: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld" | "gad7";
     inputs: {
         age: number;
         confusion: boolean;
@@ -1034,6 +1091,14 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         creatinine: number;
         inr: number;
         dialysis: boolean;
+    } | {
+        nervous: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        stopWorrying: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        worryingTooMuch: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        troubleRelaxing: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+        feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

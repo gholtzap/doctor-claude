@@ -16,6 +16,7 @@ import {
   PERCInputSchema,
   TIMIInputSchema,
   MELDInputSchema,
+  GAD7InputSchema,
 } from './schemas.js';
 import { calculateCURB65 } from './calculators/curb65.js';
 import { calculateCentor } from './calculators/centor.js';
@@ -32,6 +33,7 @@ import { calculateSOFA } from './calculators/sofa.js';
 import { calculatePERC } from './calculators/perc.js';
 import { calculateTIMI } from './calculators/timi.js';
 import { calculateMELD } from './calculators/meld.js';
+import { calculateGAD7 } from './calculators/gad7.js';
 
 const calculatorMap = {
   curb65: {
@@ -93,6 +95,10 @@ const calculatorMap = {
   meld: {
     schema: MELDInputSchema,
     calculate: calculateMELD,
+  },
+  gad7: {
+    schema: GAD7InputSchema,
+    calculate: calculateGAD7,
   },
 } as const;
 

@@ -245,4 +245,33 @@ export declare const CLINICAL_GUIDANCE: {
             recommendation: string;
         };
     }[];
+    readonly gad7: readonly [{
+        readonly threshold: 5;
+        readonly guidance: {
+            readonly riskCategory: "Minimal Anxiety";
+            readonly interpretation: "Minimal or no anxiety symptoms. Score suggests no significant anxiety disorder present.";
+            readonly recommendation: "No treatment indicated based on GAD-7 alone. Reassurance and routine follow-up appropriate. Consider rescreening if symptoms develop or worsen.";
+        };
+    }, {
+        readonly threshold: 10;
+        readonly guidance: {
+            readonly riskCategory: "Mild Anxiety";
+            readonly interpretation: "Mild anxiety symptoms present. May indicate emerging anxiety disorder.";
+            readonly recommendation: "Watchful waiting with follow-up in 2-4 weeks. Consider psychoeducation about anxiety management, relaxation techniques, and stress reduction strategies. Rescreening recommended. If symptoms persist or worsen, consider treatment options. Rule out medical causes (thyroid, cardiac, medication side effects).";
+        };
+    }, {
+        readonly threshold: 15;
+        readonly guidance: {
+            readonly riskCategory: "Moderate Anxiety";
+            readonly interpretation: "Moderate anxiety symptoms. Likely meets criteria for generalized anxiety disorder (GAD) or other anxiety disorder.";
+            readonly recommendation: "Treatment recommended. Options include: cognitive behavioral therapy (CBT) as first-line, or combination of CBT with medication (SSRIs/SNRIs). Screen for comorbid depression using PHQ-9. Assess for substance use. Consider referral to mental health professional. Monitor response to treatment with repeat GAD-7 in 4-8 weeks.";
+        };
+    }, {
+        readonly threshold: 22;
+        readonly guidance: {
+            readonly riskCategory: "Severe Anxiety";
+            readonly interpretation: "Severe anxiety symptoms. Significant functional impairment likely present.";
+            readonly recommendation: "Prompt treatment essential. Combination therapy (medication + psychotherapy) typically most effective. Consider SSRIs (first-line: sertraline, escitalopram) or SNRIs (venlafaxine, duloxetine). Refer to psychiatry or mental health professional. Screen for suicide risk, comorbid depression, and substance use. Short-term benzodiazepines may be considered for acute symptom relief while starting SSRI/SNRI (which takes 2-4 weeks to take effect), but avoid long-term use due to dependence risk. Close follow-up required.";
+        };
+    }];
 };
