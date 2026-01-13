@@ -1,6 +1,6 @@
 import { z } from 'zod';
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa", "perc"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -316,9 +316,36 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         fio2?: number | undefined;
         meanArterialPressure?: number | undefined;
         urineOutput?: number | undefined;
+    }>, z.ZodObject<{
+        age: z.ZodNumber;
+        heartRate: z.ZodNumber;
+        oxygenSaturation: z.ZodNumber;
+        unilateralLegSwelling: z.ZodBoolean;
+        hemoptysis: z.ZodBoolean;
+        recentSurgeryOrTrauma: z.ZodBoolean;
+        priorPEorDVT: z.ZodBoolean;
+        hormoneUse: z.ZodBoolean;
+    }, "strip", z.ZodTypeAny, {
+        age: number;
+        hemoptysis: boolean;
+        heartRate: number;
+        oxygenSaturation: number;
+        unilateralLegSwelling: boolean;
+        recentSurgeryOrTrauma: boolean;
+        priorPEorDVT: boolean;
+        hormoneUse: boolean;
+    }, {
+        age: number;
+        hemoptysis: boolean;
+        heartRate: number;
+        oxygenSaturation: number;
+        unilateralLegSwelling: boolean;
+        recentSurgeryOrTrauma: boolean;
+        priorPEorDVT: boolean;
+        hormoneUse: boolean;
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc";
     inputs: {
         age: number;
         confusion: boolean;
@@ -422,9 +449,18 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         fio2?: number | undefined;
         meanArterialPressure?: number | undefined;
         urineOutput?: number | undefined;
+    } | {
+        age: number;
+        hemoptysis: boolean;
+        heartRate: number;
+        oxygenSaturation: number;
+        unilateralLegSwelling: boolean;
+        recentSurgeryOrTrauma: boolean;
+        priorPEorDVT: boolean;
+        hormoneUse: boolean;
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc";
     inputs: {
         age: number;
         confusion: boolean;
@@ -528,6 +564,15 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         fio2?: number | undefined;
         meanArterialPressure?: number | undefined;
         urineOutput?: number | undefined;
+    } | {
+        age: number;
+        hemoptysis: boolean;
+        heartRate: number;
+        oxygenSaturation: number;
+        unilateralLegSwelling: boolean;
+        recentSurgeryOrTrauma: boolean;
+        priorPEorDVT: boolean;
+        hormoneUse: boolean;
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

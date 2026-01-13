@@ -127,9 +127,20 @@ const SOFAInputSchema = z.object({
   urineOutput: z.number().optional().describe('Urine output in mL/day'),
 });
 
+const PERCInputSchema = z.object({
+  age: z.number().describe('Patient age in years'),
+  heartRate: z.number().describe('Heart rate in beats per minute'),
+  oxygenSaturation: z.number().describe('Oxygen saturation (SpO2) on room air as percentage (e.g., 95 for 95%)'),
+  unilateralLegSwelling: z.boolean().describe('Unilateral leg swelling present'),
+  hemoptysis: z.boolean().describe('Hemoptysis (coughing up blood)'),
+  recentSurgeryOrTrauma: z.boolean().describe('Recent surgery or trauma within 4 weeks requiring treatment with general anesthesia'),
+  priorPEorDVT: z.boolean().describe('Prior history of pulmonary embolism (PE) or deep vein thrombosis (DVT)'),
+  hormoneUse: z.boolean().describe('Hormone use: oral contraceptives, hormone replacement therapy, or estrogenic hormones in males or females'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa']).describe('Which clinical calculator to use'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa', 'perc']).describe('Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening), alvarado (appendicitis risk), glasgow_blatchford (upper GI bleeding risk), nihss (NIH Stroke Scale for stroke severity), sofa (Sequential Organ Failure Assessment for ICU mortality), perc (Pulmonary Embolism Rule-out Criteria)'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
@@ -1196,6 +1207,74 @@ function calculateSOFA(inputs: z.infer<typeof SOFAInputSchema>): ScoreResult {
   };
 }
 
+function calculatePERC(inputs: z.infer<typeof PERCInputSchema>): ScoreResult {
+  let score = 0;
+  const details: string[] = [];
+
+  if (inputs.age >= 50) {
+    score += 1;
+    details.push('Age ≥50 years: +1');
+  }
+
+  if (inputs.heartRate >= 100) {
+    score += 1;
+    details.push('Heart rate ≥100 bpm: +1');
+  }
+
+  if (inputs.oxygenSaturation < 95) {
+    score += 1;
+    details.push('O2 saturation <95% on room air: +1');
+  }
+
+  if (inputs.unilateralLegSwelling) {
+    score += 1;
+    details.push('Unilateral leg swelling: +1');
+  }
+
+  if (inputs.hemoptysis) {
+    score += 1;
+    details.push('Hemoptysis: +1');
+  }
+
+  if (inputs.recentSurgeryOrTrauma) {
+    score += 1;
+    details.push('Recent surgery or trauma (within 4 weeks): +1');
+  }
+
+  if (inputs.priorPEorDVT) {
+    score += 1;
+    details.push('Prior PE or DVT: +1');
+  }
+
+  if (inputs.hormoneUse) {
+    score += 1;
+    details.push('Hormone use: +1');
+  }
+
+  let interpretation: string;
+  let recommendation: string;
+  let riskCategory: string;
+
+  if (score === 0) {
+    riskCategory = 'PE Ruled Out';
+    interpretation = 'PERC negative (all 8 criteria absent). Risk of PE <1%. PE is effectively ruled out.';
+    recommendation = 'No further workup for PE needed. PERC rule successfully excludes pulmonary embolism. No D-dimer or imaging required. Consider alternative diagnoses for patient symptoms. This rule is designed to safely avoid unnecessary testing in low-risk patients.';
+  } else {
+    riskCategory = 'Further Testing Needed';
+    interpretation = `PERC positive (${score} of 8 criteria present). Cannot rule out PE with PERC alone.`;
+    recommendation = 'Proceed with PE workup. Apply Wells PE score for risk stratification. If Wells PE is low, obtain D-dimer; if D-dimer positive or Wells PE is moderate/high, proceed to CT pulmonary angiography (CTPA). PERC rule is meant for rule-out only - when positive, standard PE diagnostic algorithm should be followed.';
+  }
+
+  return {
+    score,
+    maxScore: 8,
+    interpretation,
+    recommendation,
+    riskCategory,
+    details: details.join('\n'),
+  };
+}
+
 export async function calculateClinicalScore(
   args: CalculateClinicalScoreInput
 ): Promise<ScoreResult> {
@@ -1237,6 +1316,9 @@ export async function calculateClinicalScore(
   } else if (calculator === 'sofa') {
     const validated = SOFAInputSchema.parse(inputs);
     return calculateSOFA(validated);
+  } else if (calculator === 'perc') {
+    const validated = PERCInputSchema.parse(inputs);
+    return calculatePERC(validated);
   }
 
   throw new Error(`Unknown calculator: ${calculator}`);
