@@ -66,9 +66,15 @@ const GCSInputSchema = z.object({
   motorResponse: z.enum(['obeys_commands', 'localizes_pain', 'withdraws_from_pain', 'abnormal_flexion', 'abnormal_extension', 'none']).describe('Motor response: obeys_commands (6pts) - obeys commands; localizes_pain (5pts) - localizes to painful stimulus; withdraws_from_pain (4pts) - withdraws from pain; abnormal_flexion (3pts) - abnormal flexion/decorticate posturing; abnormal_extension (2pts) - abnormal extension/decerebrate posturing; none (1pt) - no motor response'),
 });
 
+const QSOFAInputSchema = z.object({
+  respiratoryRate: z.number().describe('Respiratory rate (breaths per minute)'),
+  alteredMentalStatus: z.boolean().describe('Altered mental status (GCS <15, confusion, disorientation, lethargy)'),
+  systolicBloodPressure: z.number().describe('Systolic blood pressure in mmHg'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs']).describe('Which clinical calculator to use'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa']).describe('Which clinical calculator to use'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
@@ -589,6 +595,49 @@ function calculateGCS(inputs: z.infer<typeof GCSInputSchema>): ScoreResult {
   };
 }
 
+function calculateQSOFA(inputs: z.infer<typeof QSOFAInputSchema>): ScoreResult {
+  let score = 0;
+  const details: string[] = [];
+
+  if (inputs.respiratoryRate >= 22) {
+    score += 1;
+    details.push('Respiratory rate ≥22: +1');
+  }
+
+  if (inputs.alteredMentalStatus) {
+    score += 1;
+    details.push('Altered mental status: +1');
+  }
+
+  if (inputs.systolicBloodPressure <= 100) {
+    score += 1;
+    details.push('Systolic BP ≤100 mmHg: +1');
+  }
+
+  let interpretation: string;
+  let recommendation: string;
+  let riskCategory: string;
+
+  if (score < 2) {
+    riskCategory = 'Low Risk';
+    interpretation = 'Low risk of sepsis-related mortality and poor outcomes';
+    recommendation = 'qSOFA <2 does not rule out infection or sepsis. Continue clinical assessment. If infection suspected, consider full SOFA score and lactate measurement. Monitor closely for deterioration.';
+  } else {
+    riskCategory = 'High Risk';
+    interpretation = 'High risk of sepsis-related mortality (in-hospital mortality ~10% for qSOFA ≥2 vs ~1% for qSOFA <2)';
+    recommendation = 'qSOFA ≥2 suggests sepsis with organ dysfunction. URGENT: Obtain lactate, blood cultures, and complete blood count. Calculate full SOFA score. Initiate sepsis bundle immediately: IV fluids, broad-spectrum antibiotics within 1 hour, and consider ICU admission. Reassess frequently.';
+  }
+
+  return {
+    score,
+    maxScore: 3,
+    interpretation,
+    recommendation,
+    riskCategory,
+    details: details.join('\n'),
+  };
+}
+
 export async function calculateClinicalScore(
   args: CalculateClinicalScoreInput
 ): Promise<ScoreResult> {
@@ -615,6 +664,9 @@ export async function calculateClinicalScore(
   } else if (calculator === 'gcs') {
     const validated = GCSInputSchema.parse(inputs);
     return calculateGCS(validated);
+  } else if (calculator === 'qsofa') {
+    const validated = QSOFAInputSchema.parse(inputs);
+    return calculateQSOFA(validated);
   }
 
   throw new Error(`Unknown calculator: ${calculator}`);

@@ -190,7 +190,7 @@ class DoctorClaudeServer {
           name: 'calculate_clinical_score',
           description:
             'Calculate clinical decision rule scores to help assess disease severity, risk stratification, and guide clinical decision-making. ' +
-            'Supports multiple evidence-based calculators: CURB-65 (pneumonia severity), Centor Score (strep throat probability), Wells DVT (deep vein thrombosis risk), Wells PE (pulmonary embolism risk), HEART Score (chest pain cardiac risk). ' +
+            'Supports multiple evidence-based calculators: CURB-65 (pneumonia severity), Centor Score (strep throat probability), Wells DVT (deep vein thrombosis risk), Wells PE (pulmonary embolism risk), HEART Score (chest pain cardiac risk), CHA2DS2-VASc (stroke risk in atrial fibrillation), GCS (Glasgow Coma Scale for consciousness assessment), qSOFA (sepsis screening). ' +
             'These tools help determine appropriate level of care (outpatient vs hospital) and testing strategies. ' +
             'This tool provides EDUCATIONAL information only - all clinical decisions must be made by qualified healthcare providers.',
           inputSchema: {
@@ -198,8 +198,8 @@ class DoctorClaudeServer {
             properties: {
               calculator: {
                 type: 'string',
-                enum: ['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart'],
-                description: 'Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk)',
+                enum: ['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa'],
+                description: 'Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening)',
               },
               inputs: {
                 type: 'object',

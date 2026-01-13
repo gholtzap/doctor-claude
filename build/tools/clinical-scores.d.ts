@@ -1,6 +1,6 @@
 import { z } from 'zod';
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -163,9 +163,21 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         eyeOpening: "spontaneous" | "to_speech" | "to_pain" | "none";
         verbalResponse: "none" | "oriented" | "confused" | "inappropriate_words" | "incomprehensible";
         motorResponse: "none" | "obeys_commands" | "localizes_pain" | "withdraws_from_pain" | "abnormal_flexion" | "abnormal_extension";
+    }>, z.ZodObject<{
+        respiratoryRate: z.ZodNumber;
+        alteredMentalStatus: z.ZodBoolean;
+        systolicBloodPressure: z.ZodNumber;
+    }, "strip", z.ZodTypeAny, {
+        respiratoryRate: number;
+        alteredMentalStatus: boolean;
+        systolicBloodPressure: number;
+    }, {
+        respiratoryRate: number;
+        alteredMentalStatus: boolean;
+        systolicBloodPressure: number;
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa";
     inputs: {
         age: number;
         confusion: boolean;
@@ -218,9 +230,13 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         eyeOpening: "spontaneous" | "to_speech" | "to_pain" | "none";
         verbalResponse: "none" | "oriented" | "confused" | "inappropriate_words" | "incomprehensible";
         motorResponse: "none" | "obeys_commands" | "localizes_pain" | "withdraws_from_pain" | "abnormal_flexion" | "abnormal_extension";
+    } | {
+        respiratoryRate: number;
+        alteredMentalStatus: boolean;
+        systolicBloodPressure: number;
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa";
     inputs: {
         age: number;
         confusion: boolean;
@@ -273,6 +289,10 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         eyeOpening: "spontaneous" | "to_speech" | "to_pain" | "none";
         verbalResponse: "none" | "oriented" | "confused" | "inappropriate_words" | "incomprehensible";
         motorResponse: "none" | "obeys_commands" | "localizes_pain" | "withdraws_from_pain" | "abnormal_flexion" | "abnormal_extension";
+    } | {
+        respiratoryRate: number;
+        alteredMentalStatus: boolean;
+        systolicBloodPressure: number;
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

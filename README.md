@@ -17,6 +17,8 @@ npm run build
 claude mcp add --transport stdio doctor-claude -- node $(pwd)/build/index.js
 ```
 
+3. *optional* set your patient profile.
+
 ## Patient Profile
 
 Create a `patient-profile.json` file in your working directory to provide personalized medical context during consultations. This file is automatically loaded when you start a diagnostic consultation.
@@ -51,128 +53,4 @@ Engages Claude in a systematic medical consultation process. Automatically inclu
 **Usage in Claude Code:**
 ```bash
 /mcp__doctor_claude__diagnostic_consultation
-```
-
-
-## Tools
-
-### search_medical_info
-
-Search for peer-reviewed medical information from MedlinePlus and StatPearls.
-
-**Parameters:**
-- `query` (string, required): Medical topic or condition to search for
-- `source` (enum, optional): "medlineplus" | "statpearls" | "both" (default: "both")
-
-**Returns:** Array of search results with titles, URLs, and descriptions
-
-**Example:**
-```json
-{
-  "query": "allergic rhinitis",
-  "source": "both"
-}
-```
-
-### fetch_medical_article
-
-Fetch and parse the full content of a medical article.
-
-**Parameters:**
-- `url` (string, required): URL of the article (must be from allowed domains)
-
-**Returns:** Structured article with sections (symptoms, treatment, etc.)
-
-**Example:**
-```json
-{
-  "url": "https://medlineplus.gov/ency/article/000813.htm"
-}
-```
-
-### set_patient_profile
-
-Save patient profile information programmatically (alternative to creating a JSON file).
-
-**Parameters:** All optional
-- `age` (number): Patient age in years
-- `sex` (enum): "male" | "female" | "other"
-- `weight` (object): `{ value: number, unit: "kg" | "lbs" }`
-- `height` (object): `{ value: number, unit: "cm" | "in" | "ft" }`
-- `chronicConditions` (array of strings)
-- `medications` (array of strings)
-- `allergies` (array of strings)
-- `surgicalHistory` (array of strings)
-- `familyHistory` (array of strings)
-
-### get_patient_profile
-
-Retrieve the saved patient profile.
-
-### delete_patient_profile
-
-Delete the saved patient profile.
-
-### calculate_clinical_score
-
-Calculate evidence-based clinical decision rule scores for risk stratification and clinical decision-making.
-
-**Parameters:**
-- `calculator` (enum, required): Which calculator to use
-  - `curb65`: Pneumonia severity and mortality risk
-  - `centor`: Streptococcal pharyngitis probability
-  - `wells_dvt`: Deep vein thrombosis probability
-  - `wells_pe`: Pulmonary embolism probability
-  - `heart`: Chest pain major adverse cardiac event risk
-- `inputs` (object, required): Calculator-specific parameters
-
-**Returns:** Score, risk category, interpretation, and clinical recommendations
-
-**Examples:**
-
-CURB-65 (Pneumonia):
-```json
-{
-  "calculator": "curb65",
-  "inputs": {
-    "confusion": false,
-    "urea": 25,
-    "respiratoryRate": 24,
-    "bloodPressure": { "systolic": 110, "diastolic": 70 },
-    "age": 72
-  }
-}
-```
-
-Wells' DVT:
-```json
-{
-  "calculator": "wells_dvt",
-  "inputs": {
-    "activeCancer": false,
-    "paralysisOrImmobilization": false,
-    "recentlyBedridden": false,
-    "localizedTenderness": true,
-    "entireLegSwollen": false,
-    "calfSwelling": true,
-    "pittingEdema": true,
-    "collateralVeins": false,
-    "previousDVT": false,
-    "alternativeDiagnosis": false
-  }
-}
-```
-
-HEART Score (Chest Pain):
-```json
-{
-  "calculator": "heart",
-  "inputs": {
-    "history": "moderately_suspicious",
-    "ecg": "nonspecific_changes",
-    "age": 58,
-    "riskFactors": 2,
-    "troponin": "normal"
-  }
-}
 ```
