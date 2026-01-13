@@ -5,6 +5,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, ListPromptsRequestSchema
 import { searchMedicalInfo, SearchMedicalInfoSchema } from './tools/search.js';
 import { fetchMedicalArticle, FetchMedicalArticleSchema } from './tools/fetch.js';
 import { setPatientProfile, getPatientProfile, deletePatientProfile, SetPatientProfileSchema } from './tools/profile.js';
+import { calculateClinicalScore, CalculateClinicalScoreSchema } from './tools/clinical-scores.js';
 import { loadProfile, formatProfileForPrompt } from './profile/manager.js';
 import { getDiagnosticPrompt } from './prompts/diagnostic.js';
 /**
@@ -151,6 +152,28 @@ class DoctorClaudeServer {
                         properties: {},
                     },
                 },
+                {
+                    name: 'calculate_clinical_score',
+                    description: 'Calculate clinical decision rule scores to help assess disease severity, risk stratification, and guide clinical decision-making. ' +
+                        'Supports multiple evidence-based calculators: CURB-65 (pneumonia severity), Centor Score (strep throat probability). ' +
+                        'These tools help determine appropriate level of care (outpatient vs hospital) and testing strategies. ' +
+                        'This tool provides EDUCATIONAL information only - all clinical decisions must be made by qualified healthcare providers.',
+                    inputSchema: {
+                        type: 'object',
+                        properties: {
+                            calculator: {
+                                type: 'string',
+                                enum: ['curb65', 'centor'],
+                                description: 'Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability)',
+                            },
+                            inputs: {
+                                type: 'object',
+                                description: 'Input parameters for the selected calculator. For CURB-65: confusion (boolean), urea (number, optional), respiratoryRate (number), bloodPressure (object with systolic/diastolic), age (number). For Centor: fever (boolean), tonsillarExudate (boolean), tenderAnteriorNodes (boolean), noCough (boolean), age (number).',
+                            },
+                        },
+                        required: ['calculator', 'inputs'],
+                    },
+                },
             ],
         }));
         // Handle tool calls
@@ -212,6 +235,34 @@ class DoctorClaudeServer {
                             {
                                 type: 'text',
                                 text: result,
+                            },
+                        ],
+                    };
+                }
+                else if (name === 'calculate_clinical_score') {
+                    const validatedArgs = CalculateClinicalScoreSchema.parse(args);
+                    const result = await calculateClinicalScore(validatedArgs);
+                    const formattedResult = `## ${validatedArgs.calculator.toUpperCase()} Score
+
+**Score: ${result.score}/${result.maxScore}**
+**Risk Category: ${result.riskCategory}**
+
+### Interpretation
+${result.interpretation}
+
+### Recommendation
+${result.recommendation}
+
+### Score Breakdown
+${result.details}
+
+---
+*This tool provides EDUCATIONAL information only. All clinical decisions must be made by qualified healthcare providers.*`;
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: formattedResult,
                             },
                         ],
                     };
