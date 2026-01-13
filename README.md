@@ -38,7 +38,7 @@ Create a `patient-profile.json` file in your working directory to provide person
 
 All fields are optional. Copy `patient-profile.example.json` to `patient-profile.json` and customize it.
 
-**Privacy:** Your profile is stored locally and never transmitted anywhere except as context when you use the diagnostic consultation prompt.
+**Privacy:** Your profile has the same privacy level as sending it in a claude chat. I, the developer, have 0 access to any profiles, as they are stored locally on your machine.
 
 ## Prompts
 
