@@ -190,7 +190,7 @@ class DoctorClaudeServer {
           name: 'calculate_clinical_score',
           description:
             'Calculate clinical decision rule scores to help assess disease severity, risk stratification, and guide clinical decision-making. ' +
-            'Supports multiple evidence-based calculators: CURB-65 (pneumonia severity), Centor Score (strep throat probability). ' +
+            'Supports multiple evidence-based calculators: CURB-65 (pneumonia severity), Centor Score (strep throat probability), Wells DVT (deep vein thrombosis risk), Wells PE (pulmonary embolism risk), HEART Score (chest pain cardiac risk). ' +
             'These tools help determine appropriate level of care (outpatient vs hospital) and testing strategies. ' +
             'This tool provides EDUCATIONAL information only - all clinical decisions must be made by qualified healthcare providers.',
           inputSchema: {
@@ -198,12 +198,12 @@ class DoctorClaudeServer {
             properties: {
               calculator: {
                 type: 'string',
-                enum: ['curb65', 'centor'],
-                description: 'Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability)',
+                enum: ['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart'],
+                description: 'Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk)',
               },
               inputs: {
                 type: 'object',
-                description: 'Input parameters for the selected calculator. For CURB-65: confusion (boolean), urea (number, optional), respiratoryRate (number), bloodPressure (object with systolic/diastolic), age (number). For Centor: fever (boolean), tonsillarExudate (boolean), tenderAnteriorNodes (boolean), noCough (boolean), age (number).',
+                description: 'Input parameters for the selected calculator. Varies by calculator - see tool schemas for details.',
               },
             },
             required: ['calculator', 'inputs'],
