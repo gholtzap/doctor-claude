@@ -1275,9 +1275,9 @@ function calculatePERC(inputs: z.infer<typeof PERCInputSchema>): ScoreResult {
   };
 }
 
-export async function calculateClinicalScore(
+export function calculateClinicalScore(
   args: CalculateClinicalScoreInput
-): Promise<ScoreResult> {
+): ScoreResult {
   const { calculator, inputs } = args;
 
   if (calculator === 'curb65') {

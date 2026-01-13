@@ -1188,7 +1188,7 @@ function calculatePERC(inputs) {
         details: details.join('\n'),
     };
 }
-export async function calculateClinicalScore(args) {
+export function calculateClinicalScore(args) {
     const { calculator, inputs } = args;
     if (calculator === 'curb65') {
         const validated = CURB65InputSchema.parse(inputs);

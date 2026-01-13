@@ -584,5 +584,5 @@ interface ScoreResult {
     riskCategory: string;
     details: string;
 }
-export declare function calculateClinicalScore(args: CalculateClinicalScoreInput): Promise<ScoreResult>;
+export declare function calculateClinicalScore(args: CalculateClinicalScoreInput): ScoreResult;
 export {};

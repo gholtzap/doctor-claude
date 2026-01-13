@@ -241,7 +241,7 @@ class DoctorClaudeServer {
                 }
                 else if (name === 'calculate_clinical_score') {
                     const validatedArgs = CalculateClinicalScoreSchema.parse(args);
-                    const result = await calculateClinicalScore(validatedArgs);
+                    const result = calculateClinicalScore(validatedArgs);
                     const formattedResult = `## ${validatedArgs.calculator.toUpperCase()} Score
 
 **Score: ${result.score}/${result.maxScore}**
