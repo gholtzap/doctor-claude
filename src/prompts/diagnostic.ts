@@ -3,12 +3,12 @@
  * Guides Claude through a systematic medical consultation process
  */
 
-export function getDiagnosticPrompt(chiefComplaint?: string): string {
+export function getDiagnosticPrompt(chiefComplaint?: string, profileContext?: string): string {
   const opening = chiefComplaint
     ? `You mentioned: "${chiefComplaint}"\n\nLet me gather more information about this.`
     : 'What brings you here today? Please describe your main concern or symptom.';
 
-  return `I'll conduct a medical consultation to help you understand your symptoms. Let me be clear about important disclaimers:
+  return `I'll conduct a medical consultation to help you understand your symptoms. Let me be clear about important disclaimers:${profileContext || ''}
 
 **IMPORTANT DISCLAIMERS:**
 - I am an AI assistant, not a licensed medical professional

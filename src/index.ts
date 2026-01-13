@@ -18,6 +18,13 @@ import {
   FetchMedicalArticleSchema,
   type MedicalArticle
 } from './tools/fetch.js';
+import {
+  setPatientProfile,
+  getPatientProfile,
+  deletePatientProfile,
+  SetPatientProfileSchema
+} from './tools/profile.js';
+import { loadProfile, formatProfileForPrompt } from './profile/manager.js';
 import { getDiagnosticPrompt } from './prompts/diagnostic.js';
 
 /**
@@ -95,6 +102,86 @@ class DoctorClaudeServer {
             required: ['url'],
           },
         },
+        {
+          name: 'set_patient_profile',
+          description:
+            'Save patient profile information (age, weight, height, chronic conditions, medications, allergies, etc.). ' +
+            'This information is stored locally and will be used to provide more personalized medical information during consultations. ' +
+            'All fields are optional - you can provide as much or as little information as you want.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              age: {
+                type: 'number',
+                description: 'Patient age in years',
+              },
+              weight: {
+                type: 'object',
+                properties: {
+                  value: { type: 'number' },
+                  unit: { type: 'string', enum: ['kg', 'lbs'] },
+                },
+                description: 'Patient weight',
+              },
+              height: {
+                type: 'object',
+                properties: {
+                  value: { type: 'number' },
+                  unit: { type: 'string', enum: ['cm', 'in', 'ft'] },
+                },
+                description: 'Patient height',
+              },
+              sex: {
+                type: 'string',
+                enum: ['male', 'female', 'other'],
+                description: 'Biological sex',
+              },
+              chronicConditions: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'List of chronic medical conditions (e.g., diabetes, hypertension)',
+              },
+              medications: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'List of current medications',
+              },
+              allergies: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'List of allergies (medications, food, environmental)',
+              },
+              surgicalHistory: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'List of previous surgeries',
+              },
+              familyHistory: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'List of relevant family medical history',
+              },
+            },
+          },
+        },
+        {
+          name: 'get_patient_profile',
+          description:
+            'Retrieve the saved patient profile information. Returns null if no profile has been saved.',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
+        {
+          name: 'delete_patient_profile',
+          description:
+            'Delete the saved patient profile information.',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
       ],
     }));
 
@@ -119,7 +206,6 @@ class DoctorClaudeServer {
           const validatedArgs = FetchMedicalArticleSchema.parse(args);
           const article: MedicalArticle = await fetchMedicalArticle(validatedArgs);
 
-          // Format the article for readability
           const formattedArticle = this.formatArticle(article);
 
           return {
@@ -127,6 +213,40 @@ class DoctorClaudeServer {
               {
                 type: 'text',
                 text: formattedArticle,
+              },
+            ],
+          };
+        } else if (name === 'set_patient_profile') {
+          const validatedArgs = SetPatientProfileSchema.parse(args);
+          const result = await setPatientProfile(validatedArgs);
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: result,
+              },
+            ],
+          };
+        } else if (name === 'get_patient_profile') {
+          const profile = await getPatientProfile();
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: profile ? JSON.stringify(profile, null, 2) : 'No patient profile found',
+              },
+            ],
+          };
+        } else if (name === 'delete_patient_profile') {
+          const result = await deletePatientProfile();
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: result,
               },
             ],
           };
@@ -194,7 +314,9 @@ class DoctorClaudeServer {
 
       if (name === 'diagnostic_consultation') {
         const chiefComplaint = args?.chief_complaint as string | undefined;
-        const promptText = getDiagnosticPrompt(chiefComplaint);
+        const profile = await loadProfile();
+        const profileContext = formatProfileForPrompt(profile);
+        const promptText = getDiagnosticPrompt(chiefComplaint, profileContext);
 
         return {
           description: 'Medical diagnostic consultation with systematic symptom assessment',
