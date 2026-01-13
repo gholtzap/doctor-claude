@@ -77,3 +77,12 @@ export const PERC_O2_SAT_THRESHOLD = 95;
 
 export const TIMI_AGE_THRESHOLD = 65;
 export const TIMI_RISK_FACTORS_THRESHOLD = 3;
+
+export const MELD_MIN_LAB_VALUE = 1;
+export const MELD_MAX_CREATININE = 4;
+export const MELD_MIN_SCORE = 6;
+export const MELD_MAX_SCORE = 40;
+export const MELD_BILIRUBIN_COEFFICIENT = 3.78;
+export const MELD_INR_COEFFICIENT = 11.2;
+export const MELD_CREATININE_COEFFICIENT = 9.57;
+export const MELD_CONSTANT = 6.43;

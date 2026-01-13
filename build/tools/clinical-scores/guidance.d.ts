@@ -237,4 +237,12 @@ export declare const CLINICAL_GUIDANCE: {
             recommendation: string;
         };
     }[];
+    readonly meld: {
+        threshold: number;
+        guidance: {
+            riskCategory: string;
+            interpretation: string | ((score: number) => string);
+            recommendation: string;
+        };
+    }[];
 };

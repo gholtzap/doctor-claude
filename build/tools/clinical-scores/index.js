@@ -1,4 +1,4 @@
-import { CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema, TIMIInputSchema, } from './schemas.js';
+import { CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema, TIMIInputSchema, MELDInputSchema, } from './schemas.js';
 import { calculateCURB65 } from './calculators/curb65.js';
 import { calculateCentor } from './calculators/centor.js';
 import { calculateWellsDVT } from './calculators/wells-dvt.js';
@@ -13,6 +13,7 @@ import { calculateNIHSS } from './calculators/nihss.js';
 import { calculateSOFA } from './calculators/sofa.js';
 import { calculatePERC } from './calculators/perc.js';
 import { calculateTIMI } from './calculators/timi.js';
+import { calculateMELD } from './calculators/meld.js';
 const calculatorMap = {
     curb65: {
         schema: CURB65InputSchema,
@@ -69,6 +70,10 @@ const calculatorMap = {
     timi: {
         schema: TIMIInputSchema,
         calculate: calculateTIMI,
+    },
+    meld: {
+        schema: MELDInputSchema,
+        calculate: calculateMELD,
     },
 };
 export function calculateClinicalScore(args) {

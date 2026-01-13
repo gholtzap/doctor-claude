@@ -379,8 +379,24 @@ export declare const TIMIInputSchema: z.ZodObject<{
     stChanges: boolean;
     elevatedCardiacMarkers: boolean;
 }>;
+export declare const MELDInputSchema: z.ZodObject<{
+    bilirubin: z.ZodNumber;
+    inr: z.ZodNumber;
+    creatinine: z.ZodNumber;
+    dialysis: z.ZodBoolean;
+}, "strip", z.ZodTypeAny, {
+    bilirubin: number;
+    creatinine: number;
+    inr: number;
+    dialysis: boolean;
+}, {
+    bilirubin: number;
+    creatinine: number;
+    inr: number;
+    dialysis: boolean;
+}>;
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa", "perc", "timi"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa", "perc", "timi", "meld"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -747,9 +763,24 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         severeAngina: boolean;
         stChanges: boolean;
         elevatedCardiacMarkers: boolean;
+    }>, z.ZodObject<{
+        bilirubin: z.ZodNumber;
+        inr: z.ZodNumber;
+        creatinine: z.ZodNumber;
+        dialysis: z.ZodBoolean;
+    }, "strip", z.ZodTypeAny, {
+        bilirubin: number;
+        creatinine: number;
+        inr: number;
+        dialysis: boolean;
+    }, {
+        bilirubin: number;
+        creatinine: number;
+        inr: number;
+        dialysis: boolean;
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld";
     inputs: {
         age: number;
         confusion: boolean;
@@ -870,9 +901,14 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         severeAngina: boolean;
         stChanges: boolean;
         elevatedCardiacMarkers: boolean;
+    } | {
+        bilirubin: number;
+        creatinine: number;
+        inr: number;
+        dialysis: boolean;
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld";
     inputs: {
         age: number;
         confusion: boolean;
@@ -993,6 +1029,11 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         severeAngina: boolean;
         stChanges: boolean;
         elevatedCardiacMarkers: boolean;
+    } | {
+        bilirubin: number;
+        creatinine: number;
+        inr: number;
+        dialysis: boolean;
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

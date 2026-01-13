@@ -15,6 +15,7 @@ import {
   SOFAInputSchema,
   PERCInputSchema,
   TIMIInputSchema,
+  MELDInputSchema,
 } from './schemas.js';
 import { calculateCURB65 } from './calculators/curb65.js';
 import { calculateCentor } from './calculators/centor.js';
@@ -30,6 +31,7 @@ import { calculateNIHSS } from './calculators/nihss.js';
 import { calculateSOFA } from './calculators/sofa.js';
 import { calculatePERC } from './calculators/perc.js';
 import { calculateTIMI } from './calculators/timi.js';
+import { calculateMELD } from './calculators/meld.js';
 
 const calculatorMap = {
   curb65: {
@@ -87,6 +89,10 @@ const calculatorMap = {
   timi: {
     schema: TIMIInputSchema,
     calculate: calculateTIMI,
+  },
+  meld: {
+    schema: MELDInputSchema,
+    calculate: calculateMELD,
   },
 } as const;
 
