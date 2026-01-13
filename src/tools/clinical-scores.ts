@@ -77,6 +77,9 @@ const PERC_AGE_THRESHOLD = 50;
 const PERC_HEART_RATE_THRESHOLD = 100;
 const PERC_O2_SAT_THRESHOLD = 95;
 
+const TIMI_AGE_THRESHOLD = 65;
+const TIMI_RISK_FACTORS_THRESHOLD = 3;
+
 const convertUreaToBUN = (urea: number): number => {
   const isLikelyMmol = urea <= UREA_MMOL_THRESHOLD;
   return isLikelyMmol ? urea * UREA_TO_BUN_CONVERSION : urea;
@@ -171,6 +174,12 @@ const CLINICAL_GUIDANCE = {
   perc: [
     { threshold: 1, guidance: { riskCategory: 'PE Ruled Out', interpretation: 'PERC negative (all 8 criteria absent). Risk of PE <1%. PE is effectively ruled out.', recommendation: 'No further workup for PE needed. PERC rule successfully excludes pulmonary embolism. No D-dimer or imaging required. Consider alternative diagnoses for patient symptoms. This rule is designed to safely avoid unnecessary testing in low-risk patients.' } },
     { threshold: 9, guidance: { riskCategory: 'Further Testing Needed', interpretation: (score: number) => `PERC positive (${score} of 8 criteria present). Cannot rule out PE with PERC alone.`, recommendation: 'Proceed with PE workup. Apply Wells PE score for risk stratification. If Wells PE is low, obtain D-dimer; if D-dimer positive or Wells PE is moderate/high, proceed to CT pulmonary angiography (CTPA). PERC rule is meant for rule-out only - when positive, standard PE diagnostic algorithm should be followed.' } },
+  ] as { threshold: number; guidance: { riskCategory: string; interpretation: string | ((score: number) => string); recommendation: string } }[],
+  timi: [
+    { threshold: 2, guidance: { riskCategory: 'Low Risk', interpretation: 'Low risk of death, MI, or urgent revascularization at 14 days (4.7%)', recommendation: 'Conservative management appropriate. Early discharge may be considered if troponins negative and patient clinically stable. Outpatient cardiology follow-up recommended. Consider stress testing prior to discharge or as outpatient. Dual antiplatelet therapy and statin recommended.' } },
+    { threshold: 3, guidance: { riskCategory: 'Low-Intermediate Risk', interpretation: 'Low-intermediate risk of death, MI, or urgent revascularization at 14 days (8.3%)', recommendation: 'Hospital admission recommended. Serial troponins and ECGs. Early risk stratification with stress testing or coronary CT angiography. Consider early invasive strategy if high-risk features develop. Dual antiplatelet therapy, statin, and anticoagulation as indicated.' } },
+    { threshold: 5, guidance: { riskCategory: 'Intermediate Risk', interpretation: (score: number) => `Intermediate risk of death, MI, or urgent revascularization at 14 days (${score === 3 ? '13.2%' : '19.9%'})`, recommendation: 'Hospital admission required. Early invasive strategy should be considered within 24-72 hours. Cardiology consultation recommended. Serial troponins and continuous telemetry monitoring. Dual antiplatelet therapy (aspirin + P2Y12 inhibitor), anticoagulation, high-intensity statin, and beta-blocker. Consider early coronary angiography.' } },
+    { threshold: 8, guidance: { riskCategory: 'High Risk', interpretation: (score: number) => `High risk of death, MI, or urgent revascularization at 14 days (${score === 5 ? '26.2%' : score === 6 ? '40.9%' : '40.9%'})`, recommendation: 'URGENT: Early invasive strategy strongly recommended. Coronary angiography should be performed within 24 hours (or immediately if ongoing ischemia, hemodynamic instability, or electrical instability). ICU or telemetry monitoring required. Aggressive medical therapy: dual antiplatelet therapy, anticoagulation (LMWH, fondaparinux, or UFH), high-intensity statin, beta-blocker. Cardiology consultation essential. Prepare for possible PCI or CABG.' } },
   ] as { threshold: number; guidance: { riskCategory: string; interpretation: string | ((score: number) => string); recommendation: string } }[],
 } as const;
 
@@ -408,9 +417,19 @@ const PERCInputSchema = z.object({
   hormoneUse: z.boolean().describe('Hormone use: oral contraceptives, hormone replacement therapy, or estrogenic hormones in males or females'),
 });
 
+const TIMIInputSchema = z.object({
+  age: z.number().describe('Patient age in years'),
+  riskFactors: z.number().min(0).max(5).describe('Number of CAD risk factors (0-5): hypertension, hyperlipidemia, diabetes, family history of premature CAD, current smoking'),
+  knownCAD: z.boolean().describe('Known coronary artery disease (prior MI, PCI, CABG, or coronary stenosis ≥50%)'),
+  aspirinUse: z.boolean().describe('Aspirin use in the past 7 days'),
+  severeAngina: z.boolean().describe('Severe angina: ≥2 episodes of angina at rest within the past 24 hours'),
+  stChanges: z.boolean().describe('ST-segment changes ≥0.5mm on ECG'),
+  elevatedCardiacMarkers: z.boolean().describe('Elevated cardiac biomarkers (troponin or CK-MB)'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa', 'perc']).describe('Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening), alvarado (appendicitis risk), glasgow_blatchford (upper GI bleeding risk), nihss (NIH Stroke Scale for stroke severity), sofa (Sequential Organ Failure Assessment for ICU mortality), perc (Pulmonary Embolism Rule-out Criteria)'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa', 'perc', 'timi']).describe('Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening), alvarado (appendicitis risk), glasgow_blatchford (upper GI bleeding risk), nihss (NIH Stroke Scale for stroke severity), sofa (Sequential Organ Failure Assessment for ICU mortality), perc (Pulmonary Embolism Rule-out Criteria), timi (TIMI Risk Score for NSTEMI/UA)'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema, TIMIInputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
@@ -1285,6 +1304,57 @@ function calculatePERC(inputs: z.infer<typeof PERCInputSchema>): ScoreResult {
   };
 }
 
+function calculateTIMI(inputs: z.infer<typeof TIMIInputSchema>): ScoreResult {
+  let score = 0;
+  const details: string[] = [];
+
+  if (inputs.age >= TIMI_AGE_THRESHOLD) {
+    score += 1;
+    details.push(`Age ≥${TIMI_AGE_THRESHOLD} years: +1`);
+  }
+
+  if (inputs.riskFactors >= TIMI_RISK_FACTORS_THRESHOLD) {
+    score += 1;
+    details.push(`≥${TIMI_RISK_FACTORS_THRESHOLD} CAD risk factors: +1`);
+  }
+
+  if (inputs.knownCAD) {
+    score += 1;
+    details.push('Known CAD (stenosis ≥50%): +1');
+  }
+
+  if (inputs.aspirinUse) {
+    score += 1;
+    details.push('Aspirin use in past 7 days: +1');
+  }
+
+  if (inputs.severeAngina) {
+    score += 1;
+    details.push('Severe angina (≥2 episodes in 24h): +1');
+  }
+
+  if (inputs.stChanges) {
+    score += 1;
+    details.push('ST changes ≥0.5mm: +1');
+  }
+
+  if (inputs.elevatedCardiacMarkers) {
+    score += 1;
+    details.push('Elevated cardiac markers: +1');
+  }
+
+  const { riskCategory, interpretation, recommendation } = getRiskGuidance('timi', score);
+
+  return {
+    score,
+    maxScore: 7,
+    interpretation,
+    recommendation,
+    riskCategory,
+    details: details.join('\n'),
+  };
+}
+
 const calculatorMap = {
   curb65: {
     schema: CURB65InputSchema,
@@ -1337,6 +1407,10 @@ const calculatorMap = {
   perc: {
     schema: PERCInputSchema,
     calculate: calculatePERC,
+  },
+  timi: {
+    schema: TIMIInputSchema,
+    calculate: calculateTIMI,
   },
 } as const;
 
