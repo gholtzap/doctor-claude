@@ -1,0 +1,32 @@
+{
+  "age": 45,
+  "sex": "female",
+  "weight": {
+    "value": 150,
+    "unit": "lbs"
+  },
+  "height": {
+    "value": 65,
+    "unit": "in"
+  },
+  "chronicConditions": [
+    "Type 2 Diabetes",
+    "Hypertension"
+  ],
+  "medications": [
+    "Metformin 500mg twice daily",
+    "Lisinopril 10mg daily"
+  ],
+  "allergies": [
+    "Penicillin",
+    "Shellfish"
+  ],
+  "surgicalHistory": [
+    "Appendectomy (2015)",
+    "C-section (2010)"
+  ],
+  "familyHistory": [
+    "Mother: Breast cancer",
+    "Father: Heart disease"
+  ]
+}

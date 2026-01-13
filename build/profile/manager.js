@@ -21,6 +21,10 @@ export const PatientProfileSchema = z.object({
 });
 const PROFILE_DIR = path.join(os.homedir(), '.doctor-claude');
 const PROFILE_FILE = path.join(PROFILE_DIR, 'profile.json');
+const LOCAL_PROFILE_FILES = [
+    'patient-profile.json',
+    '.doctor-claude-profile.json'
+];
 async function ensureProfileDir() {
     try {
         await fs.mkdir(PROFILE_DIR, { recursive: true });
@@ -29,6 +33,20 @@ async function ensureProfileDir() {
         console.error('[Profile] Error creating profile directory:', error);
         throw new Error('Failed to create profile directory');
     }
+}
+async function findLocalProfile() {
+    for (const filename of LOCAL_PROFILE_FILES) {
+        const localPath = path.join(process.cwd(), filename);
+        try {
+            await fs.access(localPath);
+            console.error(`[Profile] Found local profile at: ${localPath}`);
+            return localPath;
+        }
+        catch {
+            continue;
+        }
+    }
+    return null;
 }
 export async function saveProfile(profile) {
     await ensureProfileDir();
@@ -43,8 +61,10 @@ export async function saveProfile(profile) {
     }
 }
 export async function loadProfile() {
+    const localProfile = await findLocalProfile();
+    const profilePath = localProfile || PROFILE_FILE;
     try {
-        const data = await fs.readFile(PROFILE_FILE, 'utf-8');
+        const data = await fs.readFile(profilePath, 'utf-8');
         const parsed = JSON.parse(data);
         return PatientProfileSchema.parse(parsed);
     }
