@@ -1,6 +1,6 @@
 import { z } from 'zod';
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -127,9 +127,45 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         ecg: "significant_st_depression" | "nonspecific_changes" | "normal";
         riskFactors: number;
         troponin: "normal" | "high" | "moderate";
+    }>, z.ZodObject<{
+        congestiveHeartFailure: z.ZodBoolean;
+        hypertension: z.ZodBoolean;
+        age: z.ZodNumber;
+        diabetes: z.ZodBoolean;
+        strokeTIAThrombus: z.ZodBoolean;
+        vascularDisease: z.ZodBoolean;
+        sex: z.ZodEnum<["male", "female"]>;
+    }, "strip", z.ZodTypeAny, {
+        age: number;
+        sex: "male" | "female";
+        congestiveHeartFailure: boolean;
+        hypertension: boolean;
+        diabetes: boolean;
+        strokeTIAThrombus: boolean;
+        vascularDisease: boolean;
+    }, {
+        age: number;
+        sex: "male" | "female";
+        congestiveHeartFailure: boolean;
+        hypertension: boolean;
+        diabetes: boolean;
+        strokeTIAThrombus: boolean;
+        vascularDisease: boolean;
+    }>, z.ZodObject<{
+        eyeOpening: z.ZodEnum<["spontaneous", "to_speech", "to_pain", "none"]>;
+        verbalResponse: z.ZodEnum<["oriented", "confused", "inappropriate_words", "incomprehensible", "none"]>;
+        motorResponse: z.ZodEnum<["obeys_commands", "localizes_pain", "withdraws_from_pain", "abnormal_flexion", "abnormal_extension", "none"]>;
+    }, "strip", z.ZodTypeAny, {
+        eyeOpening: "spontaneous" | "to_speech" | "to_pain" | "none";
+        verbalResponse: "none" | "oriented" | "confused" | "inappropriate_words" | "incomprehensible";
+        motorResponse: "none" | "obeys_commands" | "localizes_pain" | "withdraws_from_pain" | "abnormal_flexion" | "abnormal_extension";
+    }, {
+        eyeOpening: "spontaneous" | "to_speech" | "to_pain" | "none";
+        verbalResponse: "none" | "oriented" | "confused" | "inappropriate_words" | "incomprehensible";
+        motorResponse: "none" | "obeys_commands" | "localizes_pain" | "withdraws_from_pain" | "abnormal_flexion" | "abnormal_extension";
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs";
     inputs: {
         age: number;
         confusion: boolean;
@@ -170,9 +206,21 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         ecg: "significant_st_depression" | "nonspecific_changes" | "normal";
         riskFactors: number;
         troponin: "normal" | "high" | "moderate";
+    } | {
+        age: number;
+        sex: "male" | "female";
+        congestiveHeartFailure: boolean;
+        hypertension: boolean;
+        diabetes: boolean;
+        strokeTIAThrombus: boolean;
+        vascularDisease: boolean;
+    } | {
+        eyeOpening: "spontaneous" | "to_speech" | "to_pain" | "none";
+        verbalResponse: "none" | "oriented" | "confused" | "inappropriate_words" | "incomprehensible";
+        motorResponse: "none" | "obeys_commands" | "localizes_pain" | "withdraws_from_pain" | "abnormal_flexion" | "abnormal_extension";
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs";
     inputs: {
         age: number;
         confusion: boolean;
@@ -213,6 +261,18 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         ecg: "significant_st_depression" | "nonspecific_changes" | "normal";
         riskFactors: number;
         troponin: "normal" | "high" | "moderate";
+    } | {
+        age: number;
+        sex: "male" | "female";
+        congestiveHeartFailure: boolean;
+        hypertension: boolean;
+        diabetes: boolean;
+        strokeTIAThrombus: boolean;
+        vascularDisease: boolean;
+    } | {
+        eyeOpening: "spontaneous" | "to_speech" | "to_pain" | "none";
+        verbalResponse: "none" | "oriented" | "confused" | "inappropriate_words" | "incomprehensible";
+        motorResponse: "none" | "obeys_commands" | "localizes_pain" | "withdraws_from_pain" | "abnormal_flexion" | "abnormal_extension";
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

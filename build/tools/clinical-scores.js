@@ -44,9 +44,23 @@ const HEARTInputSchema = z.object({
     riskFactors: z.number().min(0).describe('Number of cardiac risk factors (0-5+): hypertension, hyperlipidemia, diabetes, obesity (BMI>30), smoking (current or quit <3mo), family history of premature CAD'),
     troponin: z.enum(['high', 'moderate', 'normal']).describe('Troponin level: high (2pts) ≥3x normal limit; moderate (1pt) 1-3x normal limit; normal (0pts) ≤normal limit'),
 });
+const CHA2DS2VAScInputSchema = z.object({
+    congestiveHeartFailure: z.boolean().describe('History of congestive heart failure or left ventricular dysfunction (ejection fraction ≤40%)'),
+    hypertension: z.boolean().describe('History of hypertension or currently on antihypertensive medication'),
+    age: z.number().describe('Patient age in years'),
+    diabetes: z.boolean().describe('History of diabetes mellitus'),
+    strokeTIAThrombus: z.boolean().describe('Previous stroke, TIA, or thromboembolism'),
+    vascularDisease: z.boolean().describe('Vascular disease: prior myocardial infarction, peripheral arterial disease, or aortic plaque'),
+    sex: z.enum(['male', 'female']).describe('Biological sex'),
+});
+const GCSInputSchema = z.object({
+    eyeOpening: z.enum(['spontaneous', 'to_speech', 'to_pain', 'none']).describe('Eye opening response: spontaneous (4pts) - eyes open spontaneously; to_speech (3pts) - eyes open to verbal command; to_pain (2pts) - eyes open to painful stimulus; none (1pt) - no eye opening'),
+    verbalResponse: z.enum(['oriented', 'confused', 'inappropriate_words', 'incomprehensible', 'none']).describe('Verbal response: oriented (5pts) - oriented to person, place, time; confused (4pts) - confused conversation; inappropriate_words (3pts) - inappropriate words, discernible words; incomprehensible (2pts) - incomprehensible sounds, moaning; none (1pt) - no verbal response'),
+    motorResponse: z.enum(['obeys_commands', 'localizes_pain', 'withdraws_from_pain', 'abnormal_flexion', 'abnormal_extension', 'none']).describe('Motor response: obeys_commands (6pts) - obeys commands; localizes_pain (5pts) - localizes to painful stimulus; withdraws_from_pain (4pts) - withdraws from pain; abnormal_flexion (3pts) - abnormal flexion/decorticate posturing; abnormal_extension (2pts) - abnormal extension/decerebrate posturing; none (1pt) - no motor response'),
+});
 export const CalculateClinicalScoreSchema = z.object({
-    calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart']).describe('Which clinical calculator to use'),
-    inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema]).describe('Input parameters for the selected calculator'),
+    calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs']).describe('Which clinical calculator to use'),
+    inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema]).describe('Input parameters for the selected calculator'),
 });
 function calculateCURB65(inputs) {
     let score = 0;
@@ -373,6 +387,148 @@ function calculateHEART(inputs) {
         details: details.join('\n'),
     };
 }
+function calculateCHA2DS2VASc(inputs) {
+    let score = 0;
+    const details = [];
+    if (inputs.congestiveHeartFailure) {
+        score += 1;
+        details.push('Congestive heart failure: +1');
+    }
+    if (inputs.hypertension) {
+        score += 1;
+        details.push('Hypertension: +1');
+    }
+    if (inputs.age >= 75) {
+        score += 2;
+        details.push('Age ≥75: +2');
+    }
+    else if (inputs.age >= 65) {
+        score += 1;
+        details.push('Age 65-74: +1');
+    }
+    if (inputs.diabetes) {
+        score += 1;
+        details.push('Diabetes: +1');
+    }
+    if (inputs.strokeTIAThrombus) {
+        score += 2;
+        details.push('Prior stroke/TIA/thromboembolism: +2');
+    }
+    if (inputs.vascularDisease) {
+        score += 1;
+        details.push('Vascular disease: +1');
+    }
+    if (inputs.sex === 'female') {
+        score += 1;
+        details.push('Female sex: +1');
+    }
+    let interpretation;
+    let recommendation;
+    let riskCategory;
+    if (score === 0) {
+        riskCategory = 'Very Low Risk';
+        interpretation = 'Very low stroke risk (0-0.2% per year)';
+        recommendation = 'No antithrombotic therapy recommended. Annual reassessment of stroke risk factors is advised.';
+    }
+    else if (score === 1) {
+        riskCategory = 'Low Risk';
+        interpretation = 'Low stroke risk (0.6-1.3% per year)';
+        if (inputs.sex === 'female' && score === 1) {
+            recommendation = 'For females with score of 1 (sex alone), no anticoagulation needed. For males with score of 1, consider oral anticoagulation or aspirin based on patient preferences and bleeding risk.';
+        }
+        else {
+            recommendation = 'Consider oral anticoagulation or aspirin. Discuss risks and benefits with patient. Assess bleeding risk using HAS-BLED score.';
+        }
+    }
+    else if (score === 2) {
+        riskCategory = 'Low-Moderate Risk';
+        interpretation = 'Low-moderate stroke risk (2.2% per year)';
+        recommendation = 'Oral anticoagulation recommended (direct oral anticoagulant or warfarin). Assess bleeding risk using HAS-BLED score. Benefits typically outweigh risks.';
+    }
+    else if (score <= 4) {
+        riskCategory = 'Moderate Risk';
+        interpretation = `Moderate stroke risk (${score === 3 ? '3.2%' : '4.8%'} per year)`;
+        recommendation = 'Oral anticoagulation strongly recommended unless contraindicated. Direct oral anticoagulants (DOACs) are generally preferred over warfarin. Assess bleeding risk using HAS-BLED score.';
+    }
+    else if (score <= 6) {
+        riskCategory = 'Moderate-High Risk';
+        interpretation = `Moderate-high stroke risk (${score === 5 ? '6.7%' : '10%'} per year)`;
+        recommendation = 'Oral anticoagulation strongly recommended. DOACs preferred over warfarin in most cases. Careful monitoring and bleeding risk assessment essential.';
+    }
+    else {
+        riskCategory = 'High Risk';
+        interpretation = 'High stroke risk (>10% per year)';
+        recommendation = 'Oral anticoagulation essential unless absolute contraindication exists. DOACs preferred. Consider specialist referral for anticoagulation management and close monitoring.';
+    }
+    return {
+        score,
+        maxScore: 9,
+        interpretation,
+        recommendation,
+        riskCategory,
+        details: details.join('\n'),
+    };
+}
+function calculateGCS(inputs) {
+    let score = 0;
+    const details = [];
+    const eyeScores = {
+        spontaneous: 4,
+        to_speech: 3,
+        to_pain: 2,
+        none: 1,
+    };
+    const eyeScore = eyeScores[inputs.eyeOpening];
+    score += eyeScore;
+    details.push(`Eye opening (${inputs.eyeOpening.replace(/_/g, ' ')}): ${eyeScore}`);
+    const verbalScores = {
+        oriented: 5,
+        confused: 4,
+        inappropriate_words: 3,
+        incomprehensible: 2,
+        none: 1,
+    };
+    const verbalScore = verbalScores[inputs.verbalResponse];
+    score += verbalScore;
+    details.push(`Verbal response (${inputs.verbalResponse.replace(/_/g, ' ')}): ${verbalScore}`);
+    const motorScores = {
+        obeys_commands: 6,
+        localizes_pain: 5,
+        withdraws_from_pain: 4,
+        abnormal_flexion: 3,
+        abnormal_extension: 2,
+        none: 1,
+    };
+    const motorScore = motorScores[inputs.motorResponse];
+    score += motorScore;
+    details.push(`Motor response (${inputs.motorResponse.replace(/_/g, ' ')}): ${motorScore}`);
+    let interpretation;
+    let recommendation;
+    let riskCategory;
+    if (score >= 13) {
+        riskCategory = 'Mild';
+        interpretation = 'Mild impairment (GCS 13-15). Patient is likely to have good neurological function.';
+        recommendation = 'Mild head injury. Observe for deterioration. Most patients with GCS 13-15 can be managed with observation. Consider CT if mechanism concerning or other high-risk features present.';
+    }
+    else if (score >= 9) {
+        riskCategory = 'Moderate';
+        interpretation = 'Moderate impairment (GCS 9-12). Significant neurological dysfunction present.';
+        recommendation = 'Moderate head injury. Requires hospital admission and close monitoring. CT imaging indicated. Consider neurosurgical consultation. May require ICU admission for frequent neurological assessments.';
+    }
+    else {
+        riskCategory = 'Severe';
+        interpretation = `Severe impairment (GCS 3-8). Critical neurological dysfunction. ${score === 3 ? 'GCS 3 is the lowest possible score indicating deep coma.' : ''}`;
+        recommendation = 'Severe head injury. Immediate ICU admission required. Definitive airway management (intubation) strongly recommended for GCS ≤8. Emergency CT imaging and neurosurgical consultation essential. Consider ICP monitoring.';
+    }
+    return {
+        score,
+        maxScore: 15,
+        interpretation,
+        recommendation,
+        riskCategory,
+        details: details.join('\n'),
+    };
+}
 export async function calculateClinicalScore(args) {
     const { calculator, inputs } = args;
     if (calculator === 'curb65') {
@@ -394,6 +550,14 @@ export async function calculateClinicalScore(args) {
     else if (calculator === 'heart') {
         const validated = HEARTInputSchema.parse(inputs);
         return calculateHEART(validated);
+    }
+    else if (calculator === 'cha2ds2_vasc') {
+        const validated = CHA2DS2VAScInputSchema.parse(inputs);
+        return calculateCHA2DS2VASc(validated);
+    }
+    else if (calculator === 'gcs') {
+        const validated = GCSInputSchema.parse(inputs);
+        return calculateGCS(validated);
     }
     throw new Error(`Unknown calculator: ${calculator}`);
 }

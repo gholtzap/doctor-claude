@@ -60,9 +60,15 @@ const CHA2DS2VAScInputSchema = z.object({
   sex: z.enum(['male', 'female']).describe('Biological sex'),
 });
 
+const GCSInputSchema = z.object({
+  eyeOpening: z.enum(['spontaneous', 'to_speech', 'to_pain', 'none']).describe('Eye opening response: spontaneous (4pts) - eyes open spontaneously; to_speech (3pts) - eyes open to verbal command; to_pain (2pts) - eyes open to painful stimulus; none (1pt) - no eye opening'),
+  verbalResponse: z.enum(['oriented', 'confused', 'inappropriate_words', 'incomprehensible', 'none']).describe('Verbal response: oriented (5pts) - oriented to person, place, time; confused (4pts) - confused conversation; inappropriate_words (3pts) - inappropriate words, discernible words; incomprehensible (2pts) - incomprehensible sounds, moaning; none (1pt) - no verbal response'),
+  motorResponse: z.enum(['obeys_commands', 'localizes_pain', 'withdraws_from_pain', 'abnormal_flexion', 'abnormal_extension', 'none']).describe('Motor response: obeys_commands (6pts) - obeys commands; localizes_pain (5pts) - localizes to painful stimulus; withdraws_from_pain (4pts) - withdraws from pain; abnormal_flexion (3pts) - abnormal flexion/decorticate posturing; abnormal_extension (2pts) - abnormal extension/decerebrate posturing; none (1pt) - no motor response'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc']).describe('Which clinical calculator to use'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs']).describe('Which clinical calculator to use'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
@@ -518,6 +524,71 @@ function calculateCHA2DS2VASc(inputs: z.infer<typeof CHA2DS2VAScInputSchema>): S
   };
 }
 
+function calculateGCS(inputs: z.infer<typeof GCSInputSchema>): ScoreResult {
+  let score = 0;
+  const details: string[] = [];
+
+  const eyeScores = {
+    spontaneous: 4,
+    to_speech: 3,
+    to_pain: 2,
+    none: 1,
+  };
+  const eyeScore = eyeScores[inputs.eyeOpening];
+  score += eyeScore;
+  details.push(`Eye opening (${inputs.eyeOpening.replace(/_/g, ' ')}): ${eyeScore}`);
+
+  const verbalScores = {
+    oriented: 5,
+    confused: 4,
+    inappropriate_words: 3,
+    incomprehensible: 2,
+    none: 1,
+  };
+  const verbalScore = verbalScores[inputs.verbalResponse];
+  score += verbalScore;
+  details.push(`Verbal response (${inputs.verbalResponse.replace(/_/g, ' ')}): ${verbalScore}`);
+
+  const motorScores = {
+    obeys_commands: 6,
+    localizes_pain: 5,
+    withdraws_from_pain: 4,
+    abnormal_flexion: 3,
+    abnormal_extension: 2,
+    none: 1,
+  };
+  const motorScore = motorScores[inputs.motorResponse];
+  score += motorScore;
+  details.push(`Motor response (${inputs.motorResponse.replace(/_/g, ' ')}): ${motorScore}`);
+
+  let interpretation: string;
+  let recommendation: string;
+  let riskCategory: string;
+
+  if (score >= 13) {
+    riskCategory = 'Mild';
+    interpretation = 'Mild impairment (GCS 13-15). Patient is likely to have good neurological function.';
+    recommendation = 'Mild head injury. Observe for deterioration. Most patients with GCS 13-15 can be managed with observation. Consider CT if mechanism concerning or other high-risk features present.';
+  } else if (score >= 9) {
+    riskCategory = 'Moderate';
+    interpretation = 'Moderate impairment (GCS 9-12). Significant neurological dysfunction present.';
+    recommendation = 'Moderate head injury. Requires hospital admission and close monitoring. CT imaging indicated. Consider neurosurgical consultation. May require ICU admission for frequent neurological assessments.';
+  } else {
+    riskCategory = 'Severe';
+    interpretation = `Severe impairment (GCS 3-8). Critical neurological dysfunction. ${score === 3 ? 'GCS 3 is the lowest possible score indicating deep coma.' : ''}`;
+    recommendation = 'Severe head injury. Immediate ICU admission required. Definitive airway management (intubation) strongly recommended for GCS ≤8. Emergency CT imaging and neurosurgical consultation essential. Consider ICP monitoring.';
+  }
+
+  return {
+    score,
+    maxScore: 15,
+    interpretation,
+    recommendation,
+    riskCategory,
+    details: details.join('\n'),
+  };
+}
+
 export async function calculateClinicalScore(
   args: CalculateClinicalScoreInput
 ): Promise<ScoreResult> {
@@ -541,6 +612,9 @@ export async function calculateClinicalScore(
   } else if (calculator === 'cha2ds2_vasc') {
     const validated = CHA2DS2VAScInputSchema.parse(inputs);
     return calculateCHA2DS2VASc(validated);
+  } else if (calculator === 'gcs') {
+    const validated = GCSInputSchema.parse(inputs);
+    return calculateGCS(validated);
   }
 
   throw new Error(`Unknown calculator: ${calculator}`);
