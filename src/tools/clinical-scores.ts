@@ -72,9 +72,21 @@ const QSOFAInputSchema = z.object({
   systolicBloodPressure: z.number().describe('Systolic blood pressure in mmHg'),
 });
 
+const AlvaradoInputSchema = z.object({
+  rlqPain: z.boolean().describe('Right lower quadrant (RLQ) pain present'),
+  anorexia: z.boolean().describe('Anorexia or loss of appetite'),
+  nauseaVomiting: z.boolean().describe('Nausea or vomiting'),
+  rlqTenderness: z.boolean().describe('Tenderness in right lower quadrant on examination'),
+  reboundTenderness: z.boolean().describe('Rebound tenderness present'),
+  elevatedTemperature: z.boolean().describe('Elevated temperature ≥37.3°C (99.1°F)'),
+  leukocytosis: z.boolean().describe('Leukocytosis: white blood cell count >10,000/μL'),
+  leftShift: z.boolean().describe('Left shift: neutrophils >75%'),
+  migrationPain: z.boolean().describe('Migration of pain from periumbilical area to right lower quadrant'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa']).describe('Which clinical calculator to use'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado']).describe('Which clinical calculator to use'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
@@ -638,6 +650,82 @@ function calculateQSOFA(inputs: z.infer<typeof QSOFAInputSchema>): ScoreResult {
   };
 }
 
+function calculateAlvarado(inputs: z.infer<typeof AlvaradoInputSchema>): ScoreResult {
+  let score = 0;
+  const details: string[] = [];
+
+  if (inputs.migrationPain) {
+    score += 1;
+    details.push('Migration of pain to RLQ: +1');
+  }
+
+  if (inputs.anorexia) {
+    score += 1;
+    details.push('Anorexia: +1');
+  }
+
+  if (inputs.nauseaVomiting) {
+    score += 1;
+    details.push('Nausea/vomiting: +1');
+  }
+
+  if (inputs.rlqTenderness) {
+    score += 2;
+    details.push('RLQ tenderness: +2');
+  }
+
+  if (inputs.reboundTenderness) {
+    score += 1;
+    details.push('Rebound tenderness: +1');
+  }
+
+  if (inputs.elevatedTemperature) {
+    score += 1;
+    details.push('Elevated temperature ≥37.3°C: +1');
+  }
+
+  if (inputs.leukocytosis) {
+    score += 2;
+    details.push('Leukocytosis (WBC >10,000): +2');
+  }
+
+  if (inputs.leftShift) {
+    score += 1;
+    details.push('Left shift (neutrophils >75%): +1');
+  }
+
+  let interpretation: string;
+  let recommendation: string;
+  let riskCategory: string;
+
+  if (score <= 4) {
+    riskCategory = 'Low Risk';
+    interpretation = 'Low probability of acute appendicitis (5-20% likelihood)';
+    recommendation = 'Appendicitis unlikely. Consider alternative diagnoses. Outpatient management with close follow-up is appropriate. Discharge with return precautions. Re-evaluate if symptoms worsen or persist beyond 24-48 hours.';
+  } else if (score <= 6) {
+    riskCategory = 'Intermediate Risk';
+    interpretation = 'Moderate probability of acute appendicitis (30-65% likelihood)';
+    recommendation = 'Appendicitis possible. Further evaluation recommended with CT scan or ultrasound imaging. Active observation with serial abdominal exams. Consider surgical consultation. Admission for observation may be appropriate if imaging unavailable or equivocal.';
+  } else if (score <= 8) {
+    riskCategory = 'High Risk';
+    interpretation = 'High probability of acute appendicitis (65-85% likelihood)';
+    recommendation = 'Surgical consultation strongly recommended. CT scan or ultrasound can help confirm diagnosis and assess for complications (perforation, abscess). May proceed to surgery based on clinical judgment. NPO (nothing by mouth) and IV hydration. Consider antibiotics.';
+  } else {
+    riskCategory = 'Very High Risk';
+    interpretation = 'Very high probability of acute appendicitis (>85% likelihood)';
+    recommendation = 'Urgent surgical consultation required. Imaging (CT/ultrasound) recommended but should not significantly delay surgery if patient is clinically unstable. NPO, IV fluids, analgesia, and preoperative antibiotics. Appendectomy is indicated.';
+  }
+
+  return {
+    score,
+    maxScore: 10,
+    interpretation,
+    recommendation,
+    riskCategory,
+    details: details.join('\n'),
+  };
+}
+
 export async function calculateClinicalScore(
   args: CalculateClinicalScoreInput
 ): Promise<ScoreResult> {
@@ -667,6 +755,9 @@ export async function calculateClinicalScore(
   } else if (calculator === 'qsofa') {
     const validated = QSOFAInputSchema.parse(inputs);
     return calculateQSOFA(validated);
+  } else if (calculator === 'alvarado') {
+    const validated = AlvaradoInputSchema.parse(inputs);
+    return calculateAlvarado(validated);
   }
 
   throw new Error(`Unknown calculator: ${calculator}`);

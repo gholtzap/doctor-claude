@@ -17,7 +17,9 @@ npm run build
 claude mcp add --transport stdio doctor-claude -- node $(pwd)/build/index.js
 ```
 
-3. *optional* set your patient profile.
+3. {optional} set your patient profile (more info below)
+
+4. launch claude code and type `/mcp__doctor_claude__diagnostic_consultation`
 
 ## Patient Profile
 
