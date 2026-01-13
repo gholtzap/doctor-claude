@@ -1,6 +1,6 @@
 import { z } from 'zod';
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -235,9 +235,57 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         hepaticDisease: boolean;
         cardiacFailure: boolean;
         bun?: number | undefined;
+    }>, z.ZodObject<{
+        levelOfConsciousness: z.ZodEnum<["alert", "arouses_minor", "arouses_repeated", "coma"]>;
+        locQuestions: z.ZodEnum<["both_correct", "one_correct", "neither_correct"]>;
+        locCommands: z.ZodEnum<["both_correct", "one_correct", "neither_correct"]>;
+        bestGaze: z.ZodEnum<["normal", "partial_palsy", "forced_deviation"]>;
+        visual: z.ZodEnum<["no_loss", "partial_hemianopia", "complete_hemianopia"]>;
+        facialPalsy: z.ZodEnum<["normal", "minor", "partial", "complete"]>;
+        motorArmLeft: z.ZodEnum<["no_drift", "drift", "some_effort", "no_effort", "no_movement", "amputation"]>;
+        motorArmRight: z.ZodEnum<["no_drift", "drift", "some_effort", "no_effort", "no_movement", "amputation"]>;
+        motorLegLeft: z.ZodEnum<["no_drift", "drift", "some_effort", "no_effort", "no_movement", "amputation"]>;
+        motorLegRight: z.ZodEnum<["no_drift", "drift", "some_effort", "no_effort", "no_movement", "amputation"]>;
+        limbAtaxia: z.ZodEnum<["absent", "present_one", "present_two"]>;
+        sensory: z.ZodEnum<["normal", "mild_loss", "severe_loss"]>;
+        bestLanguage: z.ZodEnum<["no_aphasia", "mild_aphasia", "severe_aphasia", "mute"]>;
+        dysarthria: z.ZodEnum<["normal", "mild", "severe", "intubated"]>;
+        extinctionInattention: z.ZodEnum<["no_abnormality", "visual_tactile_spatial", "profound_hemi_inattention"]>;
+    }, "strip", z.ZodTypeAny, {
+        levelOfConsciousness: "alert" | "arouses_minor" | "arouses_repeated" | "coma";
+        locQuestions: "both_correct" | "one_correct" | "neither_correct";
+        locCommands: "both_correct" | "one_correct" | "neither_correct";
+        bestGaze: "normal" | "partial_palsy" | "forced_deviation";
+        visual: "no_loss" | "partial_hemianopia" | "complete_hemianopia";
+        facialPalsy: "normal" | "minor" | "partial" | "complete";
+        motorArmLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorArmRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        limbAtaxia: "absent" | "present_one" | "present_two";
+        sensory: "normal" | "mild_loss" | "severe_loss";
+        bestLanguage: "no_aphasia" | "mild_aphasia" | "severe_aphasia" | "mute";
+        dysarthria: "normal" | "mild" | "severe" | "intubated";
+        extinctionInattention: "no_abnormality" | "visual_tactile_spatial" | "profound_hemi_inattention";
+    }, {
+        levelOfConsciousness: "alert" | "arouses_minor" | "arouses_repeated" | "coma";
+        locQuestions: "both_correct" | "one_correct" | "neither_correct";
+        locCommands: "both_correct" | "one_correct" | "neither_correct";
+        bestGaze: "normal" | "partial_palsy" | "forced_deviation";
+        visual: "no_loss" | "partial_hemianopia" | "complete_hemianopia";
+        facialPalsy: "normal" | "minor" | "partial" | "complete";
+        motorArmLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorArmRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        limbAtaxia: "absent" | "present_one" | "present_two";
+        sensory: "normal" | "mild_loss" | "severe_loss";
+        bestLanguage: "no_aphasia" | "mild_aphasia" | "severe_aphasia" | "mute";
+        dysarthria: "normal" | "mild" | "severe" | "intubated";
+        extinctionInattention: "no_abnormality" | "visual_tactile_spatial" | "profound_hemi_inattention";
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss";
     inputs: {
         age: number;
         confusion: boolean;
@@ -314,9 +362,25 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         hepaticDisease: boolean;
         cardiacFailure: boolean;
         bun?: number | undefined;
+    } | {
+        levelOfConsciousness: "alert" | "arouses_minor" | "arouses_repeated" | "coma";
+        locQuestions: "both_correct" | "one_correct" | "neither_correct";
+        locCommands: "both_correct" | "one_correct" | "neither_correct";
+        bestGaze: "normal" | "partial_palsy" | "forced_deviation";
+        visual: "no_loss" | "partial_hemianopia" | "complete_hemianopia";
+        facialPalsy: "normal" | "minor" | "partial" | "complete";
+        motorArmLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorArmRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        limbAtaxia: "absent" | "present_one" | "present_two";
+        sensory: "normal" | "mild_loss" | "severe_loss";
+        bestLanguage: "no_aphasia" | "mild_aphasia" | "severe_aphasia" | "mute";
+        dysarthria: "normal" | "mild" | "severe" | "intubated";
+        extinctionInattention: "no_abnormality" | "visual_tactile_spatial" | "profound_hemi_inattention";
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss";
     inputs: {
         age: number;
         confusion: boolean;
@@ -393,6 +457,22 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         hepaticDisease: boolean;
         cardiacFailure: boolean;
         bun?: number | undefined;
+    } | {
+        levelOfConsciousness: "alert" | "arouses_minor" | "arouses_repeated" | "coma";
+        locQuestions: "both_correct" | "one_correct" | "neither_correct";
+        locCommands: "both_correct" | "one_correct" | "neither_correct";
+        bestGaze: "normal" | "partial_palsy" | "forced_deviation";
+        visual: "no_loss" | "partial_hemianopia" | "complete_hemianopia";
+        facialPalsy: "normal" | "minor" | "partial" | "complete";
+        motorArmLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorArmRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegLeft: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        motorLegRight: "no_drift" | "drift" | "some_effort" | "no_effort" | "no_movement" | "amputation";
+        limbAtaxia: "absent" | "present_one" | "present_two";
+        sensory: "normal" | "mild_loss" | "severe_loss";
+        bestLanguage: "no_aphasia" | "mild_aphasia" | "severe_aphasia" | "mute";
+        dysarthria: "normal" | "mild" | "severe" | "intubated";
+        extinctionInattention: "no_abnormality" | "visual_tactile_spatial" | "profound_hemi_inattention";
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

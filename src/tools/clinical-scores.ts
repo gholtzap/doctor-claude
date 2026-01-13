@@ -96,9 +96,27 @@ const GlasgowBlatchfordInputSchema = z.object({
   sex: z.enum(['male', 'female']).describe('Biological sex (affects hemoglobin scoring)'),
 });
 
+const NIHSSInputSchema = z.object({
+  levelOfConsciousness: z.enum(['alert', 'arouses_minor', 'arouses_repeated', 'coma']).describe('1a. Level of consciousness: alert (0pts) - alert and responsive; arouses_minor (1pt) - arousable with minor stimulation; arouses_repeated (2pts) - arousable only with repeated or painful stimulation; coma (3pts) - unresponsive or only reflex responses'),
+  locQuestions: z.enum(['both_correct', 'one_correct', 'neither_correct']).describe('1b. LOC Questions (month and age): both_correct (0pts) - answers both correctly; one_correct (1pt) - answers one correctly; neither_correct (2pts) - answers neither correctly'),
+  locCommands: z.enum(['both_correct', 'one_correct', 'neither_correct']).describe('1c. LOC Commands (open/close eyes, grip hand): both_correct (0pts) - performs both correctly; one_correct (1pt) - performs one correctly; neither_correct (2pts) - performs neither correctly'),
+  bestGaze: z.enum(['normal', 'partial_palsy', 'forced_deviation']).describe('2. Best Gaze (horizontal eye movements): normal (0pts) - normal horizontal movements; partial_palsy (1pt) - partial gaze palsy, abnormal in one or both eyes; forced_deviation (2pts) - forced deviation or total gaze paresis'),
+  visual: z.enum(['no_loss', 'partial_hemianopia', 'complete_hemianopia']).describe('3. Visual Fields: no_loss (0pts) - no visual loss; partial_hemianopia (1pt) - partial hemianopia; complete_hemianopia (3pts) - complete hemianopia or bilateral blindness'),
+  facialPalsy: z.enum(['normal', 'minor', 'partial', 'complete']).describe('4. Facial Palsy: normal (0pts) - normal facial movements; minor (1pt) - minor paralysis (flattened nasolabial fold, asymmetry on smiling); partial (2pts) - partial paralysis (total or near-total lower face); complete (3pts) - complete paralysis (absence of facial movement upper and lower face)'),
+  motorArmLeft: z.enum(['no_drift', 'drift', 'some_effort', 'no_effort', 'no_movement', 'amputation']).describe('5a. Motor Left Arm (extend arm 90° if sitting, 45° if supine for 10 seconds): no_drift (0pts) - no drift; drift (1pt) - drift but doesn\'t hit bed; some_effort (2pts) - some effort against gravity but can\'t sustain; no_effort (3pts) - no effort against gravity, arm falls; no_movement (4pts) - no movement; amputation (0pts) - amputation or joint fusion'),
+  motorArmRight: z.enum(['no_drift', 'drift', 'some_effort', 'no_effort', 'no_movement', 'amputation']).describe('5b. Motor Right Arm (extend arm 90° if sitting, 45° if supine for 10 seconds): no_drift (0pts) - no drift; drift (1pt) - drift but doesn\'t hit bed; some_effort (2pts) - some effort against gravity but can\'t sustain; no_effort (3pts) - no effort against gravity, arm falls; no_movement (4pts) - no movement; amputation (0pts) - amputation or joint fusion'),
+  motorLegLeft: z.enum(['no_drift', 'drift', 'some_effort', 'no_effort', 'no_movement', 'amputation']).describe('6a. Motor Left Leg (hold leg at 30° for 5 seconds): no_drift (0pts) - no drift; drift (1pt) - drift but doesn\'t hit bed; some_effort (2pts) - some effort against gravity but can\'t sustain; no_effort (3pts) - no effort against gravity, leg falls; no_movement (4pts) - no movement; amputation (0pts) - amputation or joint fusion'),
+  motorLegRight: z.enum(['no_drift', 'drift', 'some_effort', 'no_effort', 'no_movement', 'amputation']).describe('6b. Motor Right Leg (hold leg at 30° for 5 seconds): no_drift (0pts) - no drift; drift (1pt) - drift but doesn\'t hit bed; some_effort (2pts) - some effort against gravity but can\'t sustain; no_effort (3pts) - no effort against gravity, leg falls; no_movement (4pts) - no movement; amputation (0pts) - amputation or joint fusion'),
+  limbAtaxia: z.enum(['absent', 'present_one', 'present_two']).describe('7. Limb Ataxia (finger-nose and heel-shin tests): absent (0pts) - no ataxia or ataxia in patient who can\'t understand; present_one (1pt) - present in one limb; present_two (2pts) - present in two limbs'),
+  sensory: z.enum(['normal', 'mild_loss', 'severe_loss']).describe('8. Sensory (pinprick sensation): normal (0pts) - normal, no sensory loss; mild_loss (1pt) - mild to moderate sensory loss (patient feels pinprick less sharp or dull on affected side); severe_loss (2pts) - severe to total sensory loss (patient unaware of being touched)'),
+  bestLanguage: z.enum(['no_aphasia', 'mild_aphasia', 'severe_aphasia', 'mute']).describe('9. Best Language/Aphasia: no_aphasia (0pts) - no aphasia, normal; mild_aphasia (1pt) - mild to moderate aphasia (some fluency loss or comprehension difficulty); severe_aphasia (2pts) - severe aphasia (fragmentary expression, great need for inference); mute (3pts) - mute, global aphasia, or coma'),
+  dysarthria: z.enum(['normal', 'mild', 'severe', 'intubated']).describe('10. Dysarthria (articulation): normal (0pts) - normal articulation; mild (1pt) - mild to moderate dysarthria (slurring but can be understood); severe (2pts) - severe dysarthria (unintelligible or mute); intubated (0pts) - intubated or other physical barrier'),
+  extinctionInattention: z.enum(['no_abnormality', 'visual_tactile_spatial', 'profound_hemi_inattention']).describe('11. Extinction and Inattention (neglect): no_abnormality (0pts) - no abnormality; visual_tactile_spatial (1pt) - visual, tactile, auditory, spatial, or personal inattention/extinction to bilateral simultaneous stimulation in one sensory modality; profound_hemi_inattention (2pts) - profound hemi-inattention or extinction to more than one modality'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford']).describe('Which clinical calculator to use'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss']).describe('Which clinical calculator to use'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
@@ -852,6 +870,158 @@ function calculateGlasgowBlatchford(inputs: z.infer<typeof GlasgowBlatchfordInpu
   };
 }
 
+function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
+  let score = 0;
+  const details: string[] = [];
+
+  const locScores = {
+    alert: 0,
+    arouses_minor: 1,
+    arouses_repeated: 2,
+    coma: 3,
+  };
+  score += locScores[inputs.levelOfConsciousness];
+  details.push(`LOC: ${inputs.levelOfConsciousness.replace(/_/g, ' ')} = ${locScores[inputs.levelOfConsciousness]}`);
+
+  const questionScores = {
+    both_correct: 0,
+    one_correct: 1,
+    neither_correct: 2,
+  };
+  score += questionScores[inputs.locQuestions];
+  details.push(`LOC Questions: ${inputs.locQuestions.replace(/_/g, ' ')} = ${questionScores[inputs.locQuestions]}`);
+
+  score += questionScores[inputs.locCommands];
+  details.push(`LOC Commands: ${inputs.locCommands.replace(/_/g, ' ')} = ${questionScores[inputs.locCommands]}`);
+
+  const gazeScores = {
+    normal: 0,
+    partial_palsy: 1,
+    forced_deviation: 2,
+  };
+  score += gazeScores[inputs.bestGaze];
+  details.push(`Best Gaze: ${inputs.bestGaze.replace(/_/g, ' ')} = ${gazeScores[inputs.bestGaze]}`);
+
+  const visualScores = {
+    no_loss: 0,
+    partial_hemianopia: 1,
+    complete_hemianopia: 3,
+  };
+  score += visualScores[inputs.visual];
+  details.push(`Visual Fields: ${inputs.visual.replace(/_/g, ' ')} = ${visualScores[inputs.visual]}`);
+
+  const facialScores = {
+    normal: 0,
+    minor: 1,
+    partial: 2,
+    complete: 3,
+  };
+  score += facialScores[inputs.facialPalsy];
+  details.push(`Facial Palsy: ${inputs.facialPalsy} = ${facialScores[inputs.facialPalsy]}`);
+
+  const motorScores = {
+    no_drift: 0,
+    drift: 1,
+    some_effort: 2,
+    no_effort: 3,
+    no_movement: 4,
+    amputation: 0,
+  };
+
+  const leftArmScore = motorScores[inputs.motorArmLeft];
+  score += leftArmScore;
+  details.push(`Motor Left Arm: ${inputs.motorArmLeft.replace(/_/g, ' ')} = ${leftArmScore}`);
+
+  const rightArmScore = motorScores[inputs.motorArmRight];
+  score += rightArmScore;
+  details.push(`Motor Right Arm: ${inputs.motorArmRight.replace(/_/g, ' ')} = ${rightArmScore}`);
+
+  const leftLegScore = motorScores[inputs.motorLegLeft];
+  score += leftLegScore;
+  details.push(`Motor Left Leg: ${inputs.motorLegLeft.replace(/_/g, ' ')} = ${leftLegScore}`);
+
+  const rightLegScore = motorScores[inputs.motorLegRight];
+  score += rightLegScore;
+  details.push(`Motor Right Leg: ${inputs.motorLegRight.replace(/_/g, ' ')} = ${rightLegScore}`);
+
+  const ataxiaScores = {
+    absent: 0,
+    present_one: 1,
+    present_two: 2,
+  };
+  score += ataxiaScores[inputs.limbAtaxia];
+  details.push(`Limb Ataxia: ${inputs.limbAtaxia.replace(/_/g, ' ')} = ${ataxiaScores[inputs.limbAtaxia]}`);
+
+  const sensoryScores = {
+    normal: 0,
+    mild_loss: 1,
+    severe_loss: 2,
+  };
+  score += sensoryScores[inputs.sensory];
+  details.push(`Sensory: ${inputs.sensory.replace(/_/g, ' ')} = ${sensoryScores[inputs.sensory]}`);
+
+  const languageScores = {
+    no_aphasia: 0,
+    mild_aphasia: 1,
+    severe_aphasia: 2,
+    mute: 3,
+  };
+  score += languageScores[inputs.bestLanguage];
+  details.push(`Best Language: ${inputs.bestLanguage.replace(/_/g, ' ')} = ${languageScores[inputs.bestLanguage]}`);
+
+  const dysarthriaScores = {
+    normal: 0,
+    mild: 1,
+    severe: 2,
+    intubated: 0,
+  };
+  score += dysarthriaScores[inputs.dysarthria];
+  details.push(`Dysarthria: ${inputs.dysarthria} = ${dysarthriaScores[inputs.dysarthria]}`);
+
+  const extinctionScores = {
+    no_abnormality: 0,
+    visual_tactile_spatial: 1,
+    profound_hemi_inattention: 2,
+  };
+  score += extinctionScores[inputs.extinctionInattention];
+  details.push(`Extinction/Inattention: ${inputs.extinctionInattention.replace(/_/g, ' ')} = ${extinctionScores[inputs.extinctionInattention]}`);
+
+  let interpretation: string;
+  let recommendation: string;
+  let riskCategory: string;
+
+  if (score === 0) {
+    riskCategory = 'No Stroke';
+    interpretation = 'No stroke symptoms detected. Patient appears neurologically intact.';
+    recommendation = 'No acute stroke treatment indicated based on NIHSS alone. Consider other causes of symptoms if clinically suspected stroke. Document baseline NIHSS for future reference.';
+  } else if (score <= 4) {
+    riskCategory = 'Minor Stroke';
+    interpretation = 'Minor stroke (NIHSS 1-4). Small neurological deficit present.';
+    recommendation = 'Consider thrombolytic therapy if within time window and no contraindications (though benefit may be modest for very low scores). Admit to stroke unit. Imaging (CT/MRI) to rule out hemorrhage and confirm ischemia. May be candidate for IV tPA or mechanical thrombectomy based on imaging. Aspirin if not receiving tPA.';
+  } else if (score <= 15) {
+    riskCategory = 'Moderate Stroke';
+    interpretation = 'Moderate stroke (NIHSS 5-15). Significant neurological deficit.';
+    recommendation = 'URGENT: Candidate for thrombolytic therapy (IV tPA) if within 4.5 hours and no contraindications. Consider mechanical thrombectomy if large vessel occlusion and within time window (up to 24 hours for select patients). Immediate CT/MRI to exclude hemorrhage. Neurology and/or stroke team consultation. Admit to stroke unit or ICU. Close monitoring for neurological deterioration.';
+  } else if (score <= 20) {
+    riskCategory = 'Moderate-Severe Stroke';
+    interpretation = 'Moderate to severe stroke (NIHSS 16-20). Major neurological impairment.';
+    recommendation = 'URGENT: High priority for mechanical thrombectomy if large vessel occlusion identified on CT angiography (CTA). IV tPA if eligible and within time window. Immediate neurology/stroke team consultation. ICU admission for close monitoring. High risk for hemorrhagic transformation and cerebral edema. Consider intubation if airway compromise or GCS <8. Neurosurgical consultation may be needed.';
+  } else {
+    riskCategory = 'Severe Stroke';
+    interpretation = 'Severe stroke (NIHSS ≥21). Profound neurological deficit. High mortality risk.';
+    recommendation = 'CRITICAL: Emergent mechanical thrombectomy evaluation if large vessel occlusion present. May still benefit from IV tPA if eligible. ICU admission required. Likely need for airway protection/intubation. Risk of malignant cerebral edema is very high - neurosurgical consultation for possible decompressive hemicraniectomy. ICP monitoring may be indicated. Discuss goals of care with family. Multidisciplinary stroke team activation essential.';
+  }
+
+  return {
+    score,
+    maxScore: 42,
+    interpretation,
+    recommendation,
+    riskCategory,
+    details: details.join('\n'),
+  };
+}
+
 export async function calculateClinicalScore(
   args: CalculateClinicalScoreInput
 ): Promise<ScoreResult> {
@@ -887,6 +1057,9 @@ export async function calculateClinicalScore(
   } else if (calculator === 'glasgow_blatchford') {
     const validated = GlasgowBlatchfordInputSchema.parse(inputs);
     return calculateGlasgowBlatchford(validated);
+  } else if (calculator === 'nihss') {
+    const validated = NIHSSInputSchema.parse(inputs);
+    return calculateNIHSS(validated);
   }
 
   throw new Error(`Unknown calculator: ${calculator}`);
