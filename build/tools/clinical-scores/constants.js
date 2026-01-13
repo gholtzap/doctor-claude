@@ -69,3 +69,4 @@ export const MELD_BILIRUBIN_COEFFICIENT = 3.78;
 export const MELD_INR_COEFFICIENT = 11.2;
 export const MELD_CREATININE_COEFFICIENT = 9.57;
 export const MELD_CONSTANT = 6.43;
+export const HAS_BLED_AGE_THRESHOLD = 65;

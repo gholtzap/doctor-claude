@@ -17,6 +17,7 @@ import {
   TIMIInputSchema,
   MELDInputSchema,
   GAD7InputSchema,
+  HASBLEDInputSchema,
 } from './schemas.js';
 import { calculateCURB65 } from './calculators/curb65.js';
 import { calculateCentor } from './calculators/centor.js';
@@ -34,6 +35,7 @@ import { calculatePERC } from './calculators/perc.js';
 import { calculateTIMI } from './calculators/timi.js';
 import { calculateMELD } from './calculators/meld.js';
 import { calculateGAD7 } from './calculators/gad7.js';
+import { calculateHASBLED } from './calculators/has-bled.js';
 
 const calculatorMap = {
   curb65: {
@@ -99,6 +101,10 @@ const calculatorMap = {
   gad7: {
     schema: GAD7InputSchema,
     calculate: calculateGAD7,
+  },
+  has_bled: {
+    schema: HASBLEDInputSchema,
+    calculate: calculateHASBLED,
   },
 } as const;
 
