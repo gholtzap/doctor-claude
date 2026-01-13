@@ -88,6 +88,63 @@ const normalizeFiO2 = (fio2: number): number => {
 
 const formatEnumLabel = (value: string) => value.replace(/_/g, ' ');
 
+interface RenalScoreResult {
+  score: number;
+  detail: string;
+}
+
+function calculateRenalScore(
+  creatinine: number,
+  urineOutput: number | undefined
+): RenalScoreResult {
+  if (urineOutput !== undefined && urineOutput < SOFA_URINE_OUTPUT_THRESHOLD_CRITICAL) {
+    return {
+      score: 4,
+      detail: `Renal: Creatinine ${creatinine.toFixed(1)} mg/dL and urine output <${SOFA_URINE_OUTPUT_THRESHOLD_CRITICAL} mL/day = 4`,
+    };
+  }
+
+  if (creatinine >= SOFA_CREATININE_THRESHOLD_CRITICAL) {
+    return {
+      score: 4,
+      detail: `Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_CRITICAL} mg/dL = 4`,
+    };
+  }
+
+  if (urineOutput !== undefined && urineOutput < SOFA_URINE_OUTPUT_THRESHOLD_SEVERE) {
+    return {
+      score: 3,
+      detail: `Renal: Creatinine ${creatinine.toFixed(1)} mg/dL and urine output <${SOFA_URINE_OUTPUT_THRESHOLD_SEVERE} mL/day = 3`,
+    };
+  }
+
+  if (creatinine >= SOFA_CREATININE_THRESHOLD_SEVERE) {
+    return {
+      score: 3,
+      detail: `Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_SEVERE} mg/dL = 3`,
+    };
+  }
+
+  if (creatinine >= SOFA_CREATININE_THRESHOLD_MODERATE) {
+    return {
+      score: 2,
+      detail: `Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_MODERATE} mg/dL = 2`,
+    };
+  }
+
+  if (creatinine >= SOFA_CREATININE_THRESHOLD_MILD) {
+    return {
+      score: 1,
+      detail: `Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_MILD} mg/dL = 1`,
+    };
+  }
+
+  return {
+    score: 0,
+    detail: `Renal: Creatinine <${SOFA_CREATININE_THRESHOLD_MILD} mg/dL = 0`,
+  };
+}
+
 const CURB65InputSchema = z.object({
   confusion: z.boolean().describe('New onset confusion or altered mental status'),
   urea: z.number().optional().describe('Blood urea nitrogen (BUN) in mg/dL, or urea in mmol/L'),
@@ -1239,29 +1296,9 @@ function calculateSOFA(inputs: z.infer<typeof SOFAInputSchema>): ScoreResult {
   }
   score += cnsScore;
 
-  let renalScore = 0;
-  if (inputs.urineOutput !== undefined && inputs.urineOutput < SOFA_URINE_OUTPUT_THRESHOLD_CRITICAL) {
-    renalScore = 4;
-    details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <${SOFA_URINE_OUTPUT_THRESHOLD_CRITICAL} mL/day = 4`);
-  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_CRITICAL) {
-    renalScore = 4;
-    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_CRITICAL} mg/dL = 4`);
-  } else if (inputs.urineOutput !== undefined && inputs.urineOutput < SOFA_URINE_OUTPUT_THRESHOLD_SEVERE) {
-    renalScore = 3;
-    details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <${SOFA_URINE_OUTPUT_THRESHOLD_SEVERE} mL/day = 3`);
-  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_SEVERE) {
-    renalScore = 3;
-    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_SEVERE} mg/dL = 3`);
-  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_MODERATE) {
-    renalScore = 2;
-    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_MODERATE} mg/dL = 2`);
-  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_MILD) {
-    renalScore = 1;
-    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_MILD} mg/dL = 1`);
-  } else {
-    details.push(`Renal: Creatinine <${SOFA_CREATININE_THRESHOLD_MILD} mg/dL = 0`);
-  }
-  score += renalScore;
+  const renalResult = calculateRenalScore(inputs.creatinine, inputs.urineOutput);
+  score += renalResult.score;
+  details.push(renalResult.detail);
 
   let interpretation: string;
   let recommendation: string;
