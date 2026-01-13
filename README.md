@@ -112,3 +112,67 @@ Retrieve the saved patient profile.
 ### delete_patient_profile
 
 Delete the saved patient profile.
+
+### calculate_clinical_score
+
+Calculate evidence-based clinical decision rule scores for risk stratification and clinical decision-making.
+
+**Parameters:**
+- `calculator` (enum, required): Which calculator to use
+  - `curb65`: Pneumonia severity and mortality risk
+  - `centor`: Streptococcal pharyngitis probability
+  - `wells_dvt`: Deep vein thrombosis probability
+  - `wells_pe`: Pulmonary embolism probability
+  - `heart`: Chest pain major adverse cardiac event risk
+- `inputs` (object, required): Calculator-specific parameters
+
+**Returns:** Score, risk category, interpretation, and clinical recommendations
+
+**Examples:**
+
+CURB-65 (Pneumonia):
+```json
+{
+  "calculator": "curb65",
+  "inputs": {
+    "confusion": false,
+    "urea": 25,
+    "respiratoryRate": 24,
+    "bloodPressure": { "systolic": 110, "diastolic": 70 },
+    "age": 72
+  }
+}
+```
+
+Wells' DVT:
+```json
+{
+  "calculator": "wells_dvt",
+  "inputs": {
+    "activeCancer": false,
+    "paralysisOrImmobilization": false,
+    "recentlyBedridden": false,
+    "localizedTenderness": true,
+    "entireLegSwollen": false,
+    "calfSwelling": true,
+    "pittingEdema": true,
+    "collateralVeins": false,
+    "previousDVT": false,
+    "alternativeDiagnosis": false
+  }
+}
+```
+
+HEART Score (Chest Pain):
+```json
+{
+  "calculator": "heart",
+  "inputs": {
+    "history": "moderately_suspicious",
+    "ecg": "nonspecific_changes",
+    "age": 58,
+    "riskFactors": 2,
+    "troponin": "normal"
+  }
+}
+```
