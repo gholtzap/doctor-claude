@@ -102,9 +102,21 @@ const NIHSSInputSchema = z.object({
     dysarthria: z.enum(['normal', 'mild', 'severe', 'intubated']).describe('10. Dysarthria (articulation): normal (0pts) - normal articulation; mild (1pt) - mild to moderate dysarthria (slurring but can be understood); severe (2pts) - severe dysarthria (unintelligible or mute); intubated (0pts) - intubated or other physical barrier'),
     extinctionInattention: z.enum(['no_abnormality', 'visual_tactile_spatial', 'profound_hemi_inattention']).describe('11. Extinction and Inattention (neglect): no_abnormality (0pts) - no abnormality; visual_tactile_spatial (1pt) - visual, tactile, auditory, spatial, or personal inattention/extinction to bilateral simultaneous stimulation in one sensory modality; profound_hemi_inattention (2pts) - profound hemi-inattention or extinction to more than one modality'),
 });
+const SOFAInputSchema = z.object({
+    pao2: z.number().optional().describe('PaO2 (partial pressure of oxygen in arterial blood) in mmHg'),
+    fio2: z.number().optional().describe('FiO2 (fraction of inspired oxygen) as decimal (0.21-1.0) or percentage (21-100)'),
+    mechanicalVentilation: z.boolean().describe('Patient is mechanically ventilated'),
+    platelets: z.number().describe('Platelet count in thousands/μL (×10³/μL)'),
+    bilirubin: z.number().describe('Total bilirubin in mg/dL'),
+    meanArterialPressure: z.number().optional().describe('Mean arterial pressure (MAP) in mmHg. Can be calculated as: (Systolic + 2×Diastolic)/3'),
+    vasopressors: z.enum(['none', 'dopamine_low', 'dopamine_medium', 'dopamine_high_epi_norepi']).describe('Vasopressor use: none (0pts) - no vasopressors; dopamine_low (2pts) - dopamine ≤5 or dobutamine any dose; dopamine_medium (3pts) - dopamine >5-15; dopamine_high_epi_norepi (4pts) - dopamine >15 OR epinephrine/norepinephrine any dose. Doses in μg/kg/min'),
+    glasgowComaScale: z.number().min(3).max(15).describe('Glasgow Coma Scale score (3-15)'),
+    creatinine: z.number().describe('Serum creatinine in mg/dL'),
+    urineOutput: z.number().optional().describe('Urine output in mL/day'),
+});
 export const CalculateClinicalScoreSchema = z.object({
-    calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss']).describe('Which clinical calculator to use'),
-    inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema]).describe('Input parameters for the selected calculator'),
+    calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa']).describe('Which clinical calculator to use'),
+    inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema]).describe('Input parameters for the selected calculator'),
 });
 function calculateCURB65(inputs) {
     let score = 0;
@@ -928,6 +940,187 @@ function calculateNIHSS(inputs) {
         details: details.join('\n'),
     };
 }
+function calculateSOFA(inputs) {
+    let score = 0;
+    const details = [];
+    let respirationScore = 0;
+    if (inputs.pao2 !== undefined && inputs.fio2 !== undefined) {
+        const fio2Normalized = inputs.fio2 > 1 ? inputs.fio2 / 100 : inputs.fio2;
+        const pao2Fio2Ratio = inputs.pao2 / fio2Normalized;
+        if (pao2Fio2Ratio < 100) {
+            respirationScore = 4;
+            details.push(`Respiration: PaO2/FiO2 <100 with mechanical ventilation = 4`);
+        }
+        else if (pao2Fio2Ratio < 200) {
+            respirationScore = inputs.mechanicalVentilation ? 3 : 2;
+            details.push(`Respiration: PaO2/FiO2 <200 ${inputs.mechanicalVentilation ? 'with' : 'without'} mechanical ventilation = ${respirationScore}`);
+        }
+        else if (pao2Fio2Ratio < 300) {
+            respirationScore = 2;
+            details.push(`Respiration: PaO2/FiO2 <300 = 2`);
+        }
+        else if (pao2Fio2Ratio < 400) {
+            respirationScore = 1;
+            details.push(`Respiration: PaO2/FiO2 <400 = 1`);
+        }
+        else {
+            details.push(`Respiration: PaO2/FiO2 ≥400 = 0`);
+        }
+    }
+    else {
+        details.push(`Respiration: Unable to calculate (PaO2 or FiO2 not provided) = 0`);
+    }
+    score += respirationScore;
+    let coagulationScore = 0;
+    if (inputs.platelets < 20) {
+        coagulationScore = 4;
+        details.push(`Coagulation: Platelets <20 = 4`);
+    }
+    else if (inputs.platelets < 50) {
+        coagulationScore = 3;
+        details.push(`Coagulation: Platelets <50 = 3`);
+    }
+    else if (inputs.platelets < 100) {
+        coagulationScore = 2;
+        details.push(`Coagulation: Platelets <100 = 2`);
+    }
+    else if (inputs.platelets < 150) {
+        coagulationScore = 1;
+        details.push(`Coagulation: Platelets <150 = 1`);
+    }
+    else {
+        details.push(`Coagulation: Platelets ≥150 = 0`);
+    }
+    score += coagulationScore;
+    let liverScore = 0;
+    if (inputs.bilirubin >= 12) {
+        liverScore = 4;
+        details.push(`Liver: Bilirubin ≥12 mg/dL = 4`);
+    }
+    else if (inputs.bilirubin >= 6) {
+        liverScore = 3;
+        details.push(`Liver: Bilirubin ≥6 mg/dL = 3`);
+    }
+    else if (inputs.bilirubin >= 2) {
+        liverScore = 2;
+        details.push(`Liver: Bilirubin ≥2 mg/dL = 2`);
+    }
+    else if (inputs.bilirubin >= 1.2) {
+        liverScore = 1;
+        details.push(`Liver: Bilirubin ≥1.2 mg/dL = 1`);
+    }
+    else {
+        details.push(`Liver: Bilirubin <1.2 mg/dL = 0`);
+    }
+    score += liverScore;
+    let cardiovascularScore = 0;
+    if (inputs.vasopressors === 'dopamine_high_epi_norepi') {
+        cardiovascularScore = 4;
+        details.push(`Cardiovascular: Dopamine >15 or epinephrine/norepinephrine any dose = 4`);
+    }
+    else if (inputs.vasopressors === 'dopamine_medium') {
+        cardiovascularScore = 3;
+        details.push(`Cardiovascular: Dopamine >5-15 μg/kg/min = 3`);
+    }
+    else if (inputs.vasopressors === 'dopamine_low') {
+        cardiovascularScore = 2;
+        details.push(`Cardiovascular: Dopamine ≤5 or dobutamine any dose = 2`);
+    }
+    else if (inputs.meanArterialPressure !== undefined) {
+        if (inputs.meanArterialPressure < 70) {
+            cardiovascularScore = 1;
+            details.push(`Cardiovascular: MAP <70 mmHg = 1`);
+        }
+        else {
+            details.push(`Cardiovascular: MAP ≥70 mmHg, no vasopressors = 0`);
+        }
+    }
+    else {
+        details.push(`Cardiovascular: No vasopressors = 0`);
+    }
+    score += cardiovascularScore;
+    let cnsScore = 0;
+    if (inputs.glasgowComaScale < 6) {
+        cnsScore = 4;
+        details.push(`CNS: Glasgow Coma Scale <6 = 4`);
+    }
+    else if (inputs.glasgowComaScale < 10) {
+        cnsScore = 3;
+        details.push(`CNS: Glasgow Coma Scale 6-9 = 3`);
+    }
+    else if (inputs.glasgowComaScale < 13) {
+        cnsScore = 2;
+        details.push(`CNS: Glasgow Coma Scale 10-12 = 2`);
+    }
+    else if (inputs.glasgowComaScale < 15) {
+        cnsScore = 1;
+        details.push(`CNS: Glasgow Coma Scale 13-14 = 1`);
+    }
+    else {
+        details.push(`CNS: Glasgow Coma Scale 15 = 0`);
+    }
+    score += cnsScore;
+    let renalScore = 0;
+    if (inputs.urineOutput !== undefined && inputs.urineOutput < 200) {
+        renalScore = 4;
+        details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <200 mL/day = 4`);
+    }
+    else if (inputs.creatinine >= 5) {
+        renalScore = 4;
+        details.push(`Renal: Creatinine ≥5 mg/dL = 4`);
+    }
+    else if (inputs.urineOutput !== undefined && inputs.urineOutput < 500) {
+        renalScore = 3;
+        details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <500 mL/day = 3`);
+    }
+    else if (inputs.creatinine >= 3.5) {
+        renalScore = 3;
+        details.push(`Renal: Creatinine ≥3.5 mg/dL = 3`);
+    }
+    else if (inputs.creatinine >= 2) {
+        renalScore = 2;
+        details.push(`Renal: Creatinine ≥2 mg/dL = 2`);
+    }
+    else if (inputs.creatinine >= 1.2) {
+        renalScore = 1;
+        details.push(`Renal: Creatinine ≥1.2 mg/dL = 1`);
+    }
+    else {
+        details.push(`Renal: Creatinine <1.2 mg/dL = 0`);
+    }
+    score += renalScore;
+    let interpretation;
+    let recommendation;
+    let riskCategory;
+    if (score < 2) {
+        riskCategory = 'Low Risk';
+        interpretation = 'Low risk of mortality (<10%)';
+        recommendation = 'Continue standard ICU care. Monitor closely for changes in organ function. Reassess SOFA score daily. Focus on treating underlying infection or condition.';
+    }
+    else if (score <= 6) {
+        riskCategory = 'Moderate Risk';
+        interpretation = `Moderate risk of mortality (${score <= 4 ? '15-20%' : '20-40%'})`;
+        recommendation = 'ICU-level care required. Aggressive treatment of underlying condition. Daily SOFA scoring to track progression. Consider early consultation with specialists for individual organ support (nephrology for renal dysfunction, hepatology for liver dysfunction, etc.). Ensure adequate infection source control.';
+    }
+    else if (score <= 11) {
+        riskCategory = 'High Risk';
+        interpretation = `High risk of mortality (${score <= 9 ? '40-50%' : '50-75%'})`;
+        recommendation = 'ICU admission essential if not already admitted. Multi-organ support likely needed. Consider mechanical ventilation, renal replacement therapy (CRRT/hemodialysis), vasopressor support as indicated. Daily SOFA scoring critical. Multidisciplinary team approach. Early goals of care discussion with family may be appropriate given high mortality risk.';
+    }
+    else {
+        riskCategory = 'Very High Risk';
+        interpretation = 'Very high risk of mortality (>80%). Multiple organ dysfunction syndrome (MODS).';
+        recommendation = 'CRITICAL: Maximal ICU support required. Multi-organ failure present. Mechanical ventilation, vasopressor support, and renal replacement therapy likely all needed. Consider ECMO or other advanced therapies if available and appropriate. URGENT goals of care discussion with family essential given very high mortality. Palliative care consultation may be appropriate. Continue aggressive treatment unless family opts for comfort measures.';
+    }
+    return {
+        score,
+        maxScore: 24,
+        interpretation,
+        recommendation,
+        riskCategory,
+        details: details.join('\n'),
+    };
+}
 export async function calculateClinicalScore(args) {
     const { calculator, inputs } = args;
     if (calculator === 'curb65') {
@@ -973,6 +1166,10 @@ export async function calculateClinicalScore(args) {
     else if (calculator === 'nihss') {
         const validated = NIHSSInputSchema.parse(inputs);
         return calculateNIHSS(validated);
+    }
+    else if (calculator === 'sofa') {
+        const validated = SOFAInputSchema.parse(inputs);
+        return calculateSOFA(validated);
     }
     throw new Error(`Unknown calculator: ${calculator}`);
 }

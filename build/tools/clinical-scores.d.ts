@@ -1,6 +1,6 @@
 import { z } from 'zod';
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -283,9 +283,42 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         bestLanguage: "no_aphasia" | "mild_aphasia" | "severe_aphasia" | "mute";
         dysarthria: "normal" | "mild" | "severe" | "intubated";
         extinctionInattention: "no_abnormality" | "visual_tactile_spatial" | "profound_hemi_inattention";
+    }>, z.ZodObject<{
+        pao2: z.ZodOptional<z.ZodNumber>;
+        fio2: z.ZodOptional<z.ZodNumber>;
+        mechanicalVentilation: z.ZodBoolean;
+        platelets: z.ZodNumber;
+        bilirubin: z.ZodNumber;
+        meanArterialPressure: z.ZodOptional<z.ZodNumber>;
+        vasopressors: z.ZodEnum<["none", "dopamine_low", "dopamine_medium", "dopamine_high_epi_norepi"]>;
+        glasgowComaScale: z.ZodNumber;
+        creatinine: z.ZodNumber;
+        urineOutput: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        mechanicalVentilation: boolean;
+        platelets: number;
+        bilirubin: number;
+        vasopressors: "none" | "dopamine_low" | "dopamine_medium" | "dopamine_high_epi_norepi";
+        glasgowComaScale: number;
+        creatinine: number;
+        pao2?: number | undefined;
+        fio2?: number | undefined;
+        meanArterialPressure?: number | undefined;
+        urineOutput?: number | undefined;
+    }, {
+        mechanicalVentilation: boolean;
+        platelets: number;
+        bilirubin: number;
+        vasopressors: "none" | "dopamine_low" | "dopamine_medium" | "dopamine_high_epi_norepi";
+        glasgowComaScale: number;
+        creatinine: number;
+        pao2?: number | undefined;
+        fio2?: number | undefined;
+        meanArterialPressure?: number | undefined;
+        urineOutput?: number | undefined;
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa";
     inputs: {
         age: number;
         confusion: boolean;
@@ -378,9 +411,20 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         bestLanguage: "no_aphasia" | "mild_aphasia" | "severe_aphasia" | "mute";
         dysarthria: "normal" | "mild" | "severe" | "intubated";
         extinctionInattention: "no_abnormality" | "visual_tactile_spatial" | "profound_hemi_inattention";
+    } | {
+        mechanicalVentilation: boolean;
+        platelets: number;
+        bilirubin: number;
+        vasopressors: "none" | "dopamine_low" | "dopamine_medium" | "dopamine_high_epi_norepi";
+        glasgowComaScale: number;
+        creatinine: number;
+        pao2?: number | undefined;
+        fio2?: number | undefined;
+        meanArterialPressure?: number | undefined;
+        urineOutput?: number | undefined;
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa";
     inputs: {
         age: number;
         confusion: boolean;
@@ -473,6 +517,17 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         bestLanguage: "no_aphasia" | "mild_aphasia" | "severe_aphasia" | "mute";
         dysarthria: "normal" | "mild" | "severe" | "intubated";
         extinctionInattention: "no_abnormality" | "visual_tactile_spatial" | "profound_hemi_inattention";
+    } | {
+        mechanicalVentilation: boolean;
+        platelets: number;
+        bilirubin: number;
+        vasopressors: "none" | "dopamine_low" | "dopamine_medium" | "dopamine_high_epi_norepi";
+        glasgowComaScale: number;
+        creatinine: number;
+        pao2?: number | undefined;
+        fio2?: number | undefined;
+        meanArterialPressure?: number | undefined;
+        urineOutput?: number | undefined;
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

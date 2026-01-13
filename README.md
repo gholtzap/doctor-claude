@@ -56,3 +56,35 @@ Engages Claude in a systematic medical consultation process. Automatically inclu
 ```bash
 /mcp__doctor_claude__diagnostic_consultation
 ```
+
+## Clinical Score Calculators
+
+Doctor Claude includes evidence-based clinical decision rule calculators:
+
+### Available Calculators
+
+**Sepsis & Infection**
+- **SOFA Score** - Sequential Organ Failure Assessment. Gold standard for assessing organ dysfunction in critically ill patients. Part of Sepsis-3 definition. Scores 6 organ systems (respiration, coagulation, liver, cardiovascular, CNS, renal) from 0-4 each (max 24).
+- **qSOFA** - Quick SOFA for sepsis screening (respiratory rate, mental status, blood pressure)
+
+**Pneumonia**
+- **CURB-65** - Pneumonia severity and mortality risk (confusion, urea, respiratory rate, blood pressure, age)
+
+**Cardiovascular**
+- **HEART Score** - Chest pain cardiac event risk (history, ECG, age, risk factors, troponin)
+- **CHA2DS2-VASc** - Stroke risk in atrial fibrillation
+
+**Thromboembolism**
+- **Wells DVT** - Deep vein thrombosis probability
+- **Wells PE** - Pulmonary embolism probability
+
+**Neurology**
+- **NIHSS** - NIH Stroke Scale for stroke severity assessment
+- **Glasgow Coma Scale (GCS)** - Consciousness level assessment
+
+**Gastrointestinal**
+- **Alvarado Score** - Appendicitis risk assessment
+- **Glasgow-Blatchford Score** - Upper GI bleeding risk and need for intervention
+
+**Other**
+- **Centor Score** - Streptococcal pharyngitis probability
