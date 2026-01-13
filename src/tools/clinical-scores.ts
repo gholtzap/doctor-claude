@@ -1,5 +1,91 @@
 import { z } from 'zod';
 
+const UREA_TO_BUN_CONVERSION = 2.8;
+const UREA_MMOL_THRESHOLD = 40;
+const BUN_MG_DL_THRESHOLD = 19;
+
+const CURB65_RESPIRATORY_RATE_THRESHOLD = 30;
+const CURB65_SYSTOLIC_BP_THRESHOLD = 90;
+const CURB65_DIASTOLIC_BP_THRESHOLD = 60;
+const CURB65_AGE_THRESHOLD = 65;
+
+const CENTOR_AGE_YOUNG_MIN = 3;
+const CENTOR_AGE_YOUNG_MAX = 14;
+const CENTOR_AGE_MIDDLE_MIN = 15;
+const CENTOR_AGE_MIDDLE_MAX = 44;
+const CENTOR_AGE_OLD_MIN = 45;
+
+const HEART_AGE_HIGH_THRESHOLD = 65;
+const HEART_AGE_MODERATE_THRESHOLD = 45;
+const HEART_RISK_FACTORS_HIGH_THRESHOLD = 3;
+const HEART_RISK_FACTORS_LOW_THRESHOLD = 1;
+
+const CHA2DS2_AGE_HIGH_THRESHOLD = 75;
+const CHA2DS2_AGE_MODERATE_THRESHOLD = 65;
+
+const QSOFA_RESPIRATORY_RATE_THRESHOLD = 22;
+const QSOFA_SYSTOLIC_BP_THRESHOLD = 100;
+
+const ALVARADO_TEMPERATURE_THRESHOLD = 37.3;
+const ALVARADO_WBC_THRESHOLD = 10000;
+const ALVARADO_NEUTROPHIL_THRESHOLD = 75;
+
+const GLASGOW_BUN_THRESHOLD_HIGH = 70;
+const GLASGOW_BUN_THRESHOLD_MEDIUM_HIGH = 56;
+const GLASGOW_BUN_THRESHOLD_MEDIUM = 28;
+const GLASGOW_BUN_THRESHOLD_LOW = 18.2;
+const GLASGOW_UREA_MMOL_THRESHOLD = 50;
+
+const GLASGOW_HGB_THRESHOLD_LOW = 10;
+const GLASGOW_HGB_THRESHOLD_MEDIUM_MALE = 12;
+const GLASGOW_HGB_THRESHOLD_HIGH_MALE = 13;
+
+const GLASGOW_BP_THRESHOLD_LOW = 90;
+const GLASGOW_BP_THRESHOLD_MEDIUM = 100;
+const GLASGOW_BP_THRESHOLD_HIGH = 110;
+const GLASGOW_PULSE_THRESHOLD = 100;
+
+const SOFA_PLATELET_THRESHOLD_CRITICAL = 20;
+const SOFA_PLATELET_THRESHOLD_SEVERE = 50;
+const SOFA_PLATELET_THRESHOLD_MODERATE = 100;
+const SOFA_PLATELET_THRESHOLD_MILD = 150;
+
+const SOFA_BILIRUBIN_THRESHOLD_CRITICAL = 12;
+const SOFA_BILIRUBIN_THRESHOLD_SEVERE = 6;
+const SOFA_BILIRUBIN_THRESHOLD_MODERATE = 2;
+const SOFA_BILIRUBIN_THRESHOLD_MILD = 1.2;
+
+const SOFA_MAP_THRESHOLD = 70;
+const SOFA_GCS_THRESHOLD_CRITICAL = 6;
+const SOFA_GCS_THRESHOLD_SEVERE = 10;
+const SOFA_GCS_THRESHOLD_MODERATE = 13;
+const SOFA_GCS_THRESHOLD_MILD = 15;
+
+const SOFA_CREATININE_THRESHOLD_CRITICAL = 5;
+const SOFA_CREATININE_THRESHOLD_SEVERE = 3.5;
+const SOFA_CREATININE_THRESHOLD_MODERATE = 2;
+const SOFA_CREATININE_THRESHOLD_MILD = 1.2;
+const SOFA_URINE_OUTPUT_THRESHOLD_CRITICAL = 200;
+const SOFA_URINE_OUTPUT_THRESHOLD_SEVERE = 500;
+
+const SOFA_PAO2_FIO2_THRESHOLD_CRITICAL = 100;
+const SOFA_PAO2_FIO2_THRESHOLD_SEVERE = 200;
+const SOFA_PAO2_FIO2_THRESHOLD_MODERATE = 300;
+const SOFA_PAO2_FIO2_THRESHOLD_MILD = 400;
+
+const PERC_AGE_THRESHOLD = 50;
+const PERC_HEART_RATE_THRESHOLD = 100;
+const PERC_O2_SAT_THRESHOLD = 95;
+
+const convertUreaToBUN = (urea: number): number => {
+  const isLikelyMmol = urea <= UREA_MMOL_THRESHOLD;
+  return isLikelyMmol ? urea * UREA_TO_BUN_CONVERSION : urea;
+};
+
+const normalizeFiO2 = (fio2: number): number => {
+  return fio2 > 1 ? fio2 / 100 : fio2;
+};
+
 const formatEnumLabel = (value: string) => value.replace(/_/g, ' ');
 
 const CURB65InputSchema = z.object({
@@ -166,26 +252,26 @@ function calculateCURB65(inputs: z.infer<typeof CURB65InputSchema>): ScoreResult
   }
 
   if (inputs.urea !== undefined) {
-    const ureaThreshold = inputs.urea > 40 ? inputs.urea : inputs.urea * 2.8;
-    if (ureaThreshold > 19) {
+    const bunMgDl = convertUreaToBUN(inputs.urea);
+    if (bunMgDl > BUN_MG_DL_THRESHOLD) {
       score += 1;
       details.push('Elevated BUN/Urea: +1');
     }
   }
 
-  if (inputs.respiratoryRate >= 30) {
+  if (inputs.respiratoryRate >= CURB65_RESPIRATORY_RATE_THRESHOLD) {
     score += 1;
-    details.push('Respiratory rate ≥30: +1');
+    details.push(`Respiratory rate ≥${CURB65_RESPIRATORY_RATE_THRESHOLD}: +1`);
   }
 
-  if (inputs.bloodPressure.systolic < 90 || inputs.bloodPressure.diastolic <= 60) {
+  if (inputs.bloodPressure.systolic < CURB65_SYSTOLIC_BP_THRESHOLD || inputs.bloodPressure.diastolic <= CURB65_DIASTOLIC_BP_THRESHOLD) {
     score += 1;
     details.push('Low blood pressure: +1');
   }
 
-  if (inputs.age >= 65) {
+  if (inputs.age >= CURB65_AGE_THRESHOLD) {
     score += 1;
-    details.push('Age ≥65: +1');
+    details.push(`Age ≥${CURB65_AGE_THRESHOLD}: +1`);
   }
 
   let interpretation: string;
@@ -240,14 +326,14 @@ function calculateCentor(inputs: z.infer<typeof CentorInputSchema>): ScoreResult
     details.push('Absence of cough: +1');
   }
 
-  if (inputs.age >= 3 && inputs.age <= 14) {
+  if (inputs.age >= CENTOR_AGE_YOUNG_MIN && inputs.age <= CENTOR_AGE_YOUNG_MAX) {
     score += 1;
-    details.push('Age 3-14: +1');
-  } else if (inputs.age >= 15 && inputs.age <= 44) {
-    details.push('Age 15-44: +0');
-  } else if (inputs.age >= 45) {
+    details.push(`Age ${CENTOR_AGE_YOUNG_MIN}-${CENTOR_AGE_YOUNG_MAX}: +1`);
+  } else if (inputs.age >= CENTOR_AGE_MIDDLE_MIN && inputs.age <= CENTOR_AGE_MIDDLE_MAX) {
+    details.push(`Age ${CENTOR_AGE_MIDDLE_MIN}-${CENTOR_AGE_MIDDLE_MAX}: +0`);
+  } else if (inputs.age >= CENTOR_AGE_OLD_MIN) {
     score -= 1;
-    details.push('Age ≥45: -1');
+    details.push(`Age ≥${CENTOR_AGE_OLD_MIN}: -1`);
   }
 
   const maxScore = 4;
@@ -454,22 +540,22 @@ function calculateHEART(inputs: z.infer<typeof HEARTInputSchema>): ScoreResult {
     details.push('ECG: Normal = +0');
   }
 
-  if (inputs.age >= 65) {
+  if (inputs.age >= HEART_AGE_HIGH_THRESHOLD) {
     score += 2;
-    details.push('Age ≥65 = +2');
-  } else if (inputs.age >= 45) {
+    details.push(`Age ≥${HEART_AGE_HIGH_THRESHOLD} = +2`);
+  } else if (inputs.age >= HEART_AGE_MODERATE_THRESHOLD) {
     score += 1;
-    details.push('Age 45-64 = +1');
+    details.push(`Age ${HEART_AGE_MODERATE_THRESHOLD}-${HEART_AGE_HIGH_THRESHOLD - 1} = +1`);
   } else {
-    details.push('Age <45 = +0');
+    details.push(`Age <${HEART_AGE_MODERATE_THRESHOLD} = +0`);
   }
 
-  if (inputs.riskFactors >= 3) {
+  if (inputs.riskFactors >= HEART_RISK_FACTORS_HIGH_THRESHOLD) {
     score += 2;
-    details.push('Risk factors ≥3 = +2');
-  } else if (inputs.riskFactors >= 1) {
+    details.push(`Risk factors ≥${HEART_RISK_FACTORS_HIGH_THRESHOLD} = +2`);
+  } else if (inputs.riskFactors >= HEART_RISK_FACTORS_LOW_THRESHOLD) {
     score += 1;
-    details.push('Risk factors 1-2 = +1');
+    details.push(`Risk factors ${HEART_RISK_FACTORS_LOW_THRESHOLD}-${HEART_RISK_FACTORS_HIGH_THRESHOLD - 1} = +1`);
   } else {
     details.push('Risk factors: None = +0');
   }
@@ -526,12 +612,12 @@ function calculateCHA2DS2VASc(inputs: z.infer<typeof CHA2DS2VAScInputSchema>): S
     details.push('Hypertension: +1');
   }
 
-  if (inputs.age >= 75) {
+  if (inputs.age >= CHA2DS2_AGE_HIGH_THRESHOLD) {
     score += 2;
-    details.push('Age ≥75: +2');
-  } else if (inputs.age >= 65) {
+    details.push(`Age ≥${CHA2DS2_AGE_HIGH_THRESHOLD}: +2`);
+  } else if (inputs.age >= CHA2DS2_AGE_MODERATE_THRESHOLD) {
     score += 1;
-    details.push('Age 65-74: +1');
+    details.push(`Age ${CHA2DS2_AGE_MODERATE_THRESHOLD}-${CHA2DS2_AGE_HIGH_THRESHOLD - 1}: +1`);
   }
 
   if (inputs.diabetes) {
@@ -667,9 +753,9 @@ function calculateQSOFA(inputs: z.infer<typeof QSOFAInputSchema>): ScoreResult {
   let score = 0;
   const details: string[] = [];
 
-  if (inputs.respiratoryRate >= 22) {
+  if (inputs.respiratoryRate >= QSOFA_RESPIRATORY_RATE_THRESHOLD) {
     score += 1;
-    details.push('Respiratory rate ≥22: +1');
+    details.push(`Respiratory rate ≥${QSOFA_RESPIRATORY_RATE_THRESHOLD}: +1`);
   }
 
   if (inputs.alteredMentalStatus) {
@@ -677,9 +763,9 @@ function calculateQSOFA(inputs: z.infer<typeof QSOFAInputSchema>): ScoreResult {
     details.push('Altered mental status: +1');
   }
 
-  if (inputs.systolicBloodPressure <= 100) {
+  if (inputs.systolicBloodPressure <= QSOFA_SYSTOLIC_BP_THRESHOLD) {
     score += 1;
-    details.push('Systolic BP ≤100 mmHg: +1');
+    details.push(`Systolic BP ≤${QSOFA_SYSTOLIC_BP_THRESHOLD} mmHg: +1`);
   }
 
   let interpretation: string;
@@ -787,57 +873,57 @@ function calculateGlasgowBlatchford(inputs: z.infer<typeof GlasgowBlatchfordInpu
   const details: string[] = [];
 
   if (inputs.bun !== undefined) {
-    const bunMgDl = inputs.bun > 50 ? inputs.bun : inputs.bun * 2.8;
-    if (bunMgDl >= 70) {
+    const bunMgDl = convertUreaToBUN(inputs.bun);
+    if (bunMgDl >= GLASGOW_BUN_THRESHOLD_HIGH) {
       score += 6;
-      details.push('BUN ≥70 mg/dL: +6');
-    } else if (bunMgDl >= 56) {
+      details.push(`BUN ≥${GLASGOW_BUN_THRESHOLD_HIGH} mg/dL: +6`);
+    } else if (bunMgDl >= GLASGOW_BUN_THRESHOLD_MEDIUM_HIGH) {
       score += 4;
-      details.push('BUN 56-69.9 mg/dL: +4');
-    } else if (bunMgDl >= 28) {
+      details.push(`BUN ${GLASGOW_BUN_THRESHOLD_MEDIUM_HIGH}-${GLASGOW_BUN_THRESHOLD_HIGH - 0.1} mg/dL: +4`);
+    } else if (bunMgDl >= GLASGOW_BUN_THRESHOLD_MEDIUM) {
       score += 3;
-      details.push('BUN 28-55.9 mg/dL: +3');
-    } else if (bunMgDl >= 18.2) {
+      details.push(`BUN ${GLASGOW_BUN_THRESHOLD_MEDIUM}-${GLASGOW_BUN_THRESHOLD_MEDIUM_HIGH - 0.1} mg/dL: +3`);
+    } else if (bunMgDl >= GLASGOW_BUN_THRESHOLD_LOW) {
       score += 2;
-      details.push('BUN 18.2-27.9 mg/dL: +2');
+      details.push(`BUN ${GLASGOW_BUN_THRESHOLD_LOW}-${GLASGOW_BUN_THRESHOLD_MEDIUM - 0.1} mg/dL: +2`);
     }
   }
 
   if (inputs.sex === 'male') {
-    if (inputs.hemoglobin < 10) {
+    if (inputs.hemoglobin < GLASGOW_HGB_THRESHOLD_LOW) {
       score += 6;
-      details.push('Hemoglobin <10 g/dL (male): +6');
-    } else if (inputs.hemoglobin < 12) {
+      details.push(`Hemoglobin <${GLASGOW_HGB_THRESHOLD_LOW} g/dL (male): +6`);
+    } else if (inputs.hemoglobin < GLASGOW_HGB_THRESHOLD_MEDIUM_MALE) {
       score += 3;
-      details.push('Hemoglobin 10-11.9 g/dL (male): +3');
-    } else if (inputs.hemoglobin >= 12 && inputs.hemoglobin < 13) {
+      details.push(`Hemoglobin ${GLASGOW_HGB_THRESHOLD_LOW}-${GLASGOW_HGB_THRESHOLD_MEDIUM_MALE - 0.1} g/dL (male): +3`);
+    } else if (inputs.hemoglobin >= GLASGOW_HGB_THRESHOLD_MEDIUM_MALE && inputs.hemoglobin < GLASGOW_HGB_THRESHOLD_HIGH_MALE) {
       score += 1;
-      details.push('Hemoglobin 12-12.9 g/dL (male): +1');
+      details.push(`Hemoglobin ${GLASGOW_HGB_THRESHOLD_MEDIUM_MALE}-${GLASGOW_HGB_THRESHOLD_HIGH_MALE - 0.1} g/dL (male): +1`);
     }
   } else {
-    if (inputs.hemoglobin < 10) {
+    if (inputs.hemoglobin < GLASGOW_HGB_THRESHOLD_LOW) {
       score += 6;
-      details.push('Hemoglobin <10 g/dL (female): +6');
-    } else if (inputs.hemoglobin >= 10 && inputs.hemoglobin < 12) {
+      details.push(`Hemoglobin <${GLASGOW_HGB_THRESHOLD_LOW} g/dL (female): +6`);
+    } else if (inputs.hemoglobin >= GLASGOW_HGB_THRESHOLD_LOW && inputs.hemoglobin < GLASGOW_HGB_THRESHOLD_MEDIUM_MALE) {
       score += 1;
-      details.push('Hemoglobin 10-11.9 g/dL (female): +1');
+      details.push(`Hemoglobin ${GLASGOW_HGB_THRESHOLD_LOW}-${GLASGOW_HGB_THRESHOLD_MEDIUM_MALE - 0.1} g/dL (female): +1`);
     }
   }
 
-  if (inputs.systolicBloodPressure < 90) {
+  if (inputs.systolicBloodPressure < GLASGOW_BP_THRESHOLD_LOW) {
     score += 3;
-    details.push('Systolic BP <90 mmHg: +3');
-  } else if (inputs.systolicBloodPressure >= 90 && inputs.systolicBloodPressure < 100) {
+    details.push(`Systolic BP <${GLASGOW_BP_THRESHOLD_LOW} mmHg: +3`);
+  } else if (inputs.systolicBloodPressure >= GLASGOW_BP_THRESHOLD_LOW && inputs.systolicBloodPressure < GLASGOW_BP_THRESHOLD_MEDIUM) {
     score += 2;
-    details.push('Systolic BP 90-99 mmHg: +2');
-  } else if (inputs.systolicBloodPressure >= 100 && inputs.systolicBloodPressure < 110) {
+    details.push(`Systolic BP ${GLASGOW_BP_THRESHOLD_LOW}-${GLASGOW_BP_THRESHOLD_MEDIUM - 1} mmHg: +2`);
+  } else if (inputs.systolicBloodPressure >= GLASGOW_BP_THRESHOLD_MEDIUM && inputs.systolicBloodPressure < GLASGOW_BP_THRESHOLD_HIGH) {
     score += 1;
-    details.push('Systolic BP 100-109 mmHg: +1');
+    details.push(`Systolic BP ${GLASGOW_BP_THRESHOLD_MEDIUM}-${GLASGOW_BP_THRESHOLD_HIGH - 1} mmHg: +1`);
   }
 
-  if (inputs.pulse >= 100) {
+  if (inputs.pulse >= GLASGOW_PULSE_THRESHOLD) {
     score += 1;
-    details.push('Pulse ≥100 bpm: +1');
+    details.push(`Pulse ≥${GLASGOW_PULSE_THRESHOLD} bpm: +1`);
   }
 
   if (inputs.melena) {
@@ -1054,23 +1140,23 @@ function calculateSOFA(inputs: z.infer<typeof SOFAInputSchema>): ScoreResult {
 
   let respirationScore = 0;
   if (inputs.pao2 !== undefined && inputs.fio2 !== undefined) {
-    const fio2Normalized = inputs.fio2 > 1 ? inputs.fio2 / 100 : inputs.fio2;
+    const fio2Normalized = normalizeFiO2(inputs.fio2);
     const pao2Fio2Ratio = inputs.pao2 / fio2Normalized;
 
-    if (pao2Fio2Ratio < 100) {
+    if (pao2Fio2Ratio < SOFA_PAO2_FIO2_THRESHOLD_CRITICAL) {
       respirationScore = 4;
-      details.push(`Respiration: PaO2/FiO2 <100 with mechanical ventilation = 4`);
-    } else if (pao2Fio2Ratio < 200) {
+      details.push(`Respiration: PaO2/FiO2 <${SOFA_PAO2_FIO2_THRESHOLD_CRITICAL} with mechanical ventilation = 4`);
+    } else if (pao2Fio2Ratio < SOFA_PAO2_FIO2_THRESHOLD_SEVERE) {
       respirationScore = inputs.mechanicalVentilation ? 3 : 2;
-      details.push(`Respiration: PaO2/FiO2 <200 ${inputs.mechanicalVentilation ? 'with' : 'without'} mechanical ventilation = ${respirationScore}`);
-    } else if (pao2Fio2Ratio < 300) {
+      details.push(`Respiration: PaO2/FiO2 <${SOFA_PAO2_FIO2_THRESHOLD_SEVERE} ${inputs.mechanicalVentilation ? 'with' : 'without'} mechanical ventilation = ${respirationScore}`);
+    } else if (pao2Fio2Ratio < SOFA_PAO2_FIO2_THRESHOLD_MODERATE) {
       respirationScore = 2;
-      details.push(`Respiration: PaO2/FiO2 <300 = 2`);
-    } else if (pao2Fio2Ratio < 400) {
+      details.push(`Respiration: PaO2/FiO2 <${SOFA_PAO2_FIO2_THRESHOLD_MODERATE} = 2`);
+    } else if (pao2Fio2Ratio < SOFA_PAO2_FIO2_THRESHOLD_MILD) {
       respirationScore = 1;
-      details.push(`Respiration: PaO2/FiO2 <400 = 1`);
+      details.push(`Respiration: PaO2/FiO2 <${SOFA_PAO2_FIO2_THRESHOLD_MILD} = 1`);
     } else {
-      details.push(`Respiration: PaO2/FiO2 ≥400 = 0`);
+      details.push(`Respiration: PaO2/FiO2 ≥${SOFA_PAO2_FIO2_THRESHOLD_MILD} = 0`);
     }
   } else {
     details.push(`Respiration: Unable to calculate (PaO2 or FiO2 not provided) = 0`);
@@ -1078,38 +1164,38 @@ function calculateSOFA(inputs: z.infer<typeof SOFAInputSchema>): ScoreResult {
   score += respirationScore;
 
   let coagulationScore = 0;
-  if (inputs.platelets < 20) {
+  if (inputs.platelets < SOFA_PLATELET_THRESHOLD_CRITICAL) {
     coagulationScore = 4;
-    details.push(`Coagulation: Platelets <20 = 4`);
-  } else if (inputs.platelets < 50) {
+    details.push(`Coagulation: Platelets <${SOFA_PLATELET_THRESHOLD_CRITICAL} = 4`);
+  } else if (inputs.platelets < SOFA_PLATELET_THRESHOLD_SEVERE) {
     coagulationScore = 3;
-    details.push(`Coagulation: Platelets <50 = 3`);
-  } else if (inputs.platelets < 100) {
+    details.push(`Coagulation: Platelets <${SOFA_PLATELET_THRESHOLD_SEVERE} = 3`);
+  } else if (inputs.platelets < SOFA_PLATELET_THRESHOLD_MODERATE) {
     coagulationScore = 2;
-    details.push(`Coagulation: Platelets <100 = 2`);
-  } else if (inputs.platelets < 150) {
+    details.push(`Coagulation: Platelets <${SOFA_PLATELET_THRESHOLD_MODERATE} = 2`);
+  } else if (inputs.platelets < SOFA_PLATELET_THRESHOLD_MILD) {
     coagulationScore = 1;
-    details.push(`Coagulation: Platelets <150 = 1`);
+    details.push(`Coagulation: Platelets <${SOFA_PLATELET_THRESHOLD_MILD} = 1`);
   } else {
-    details.push(`Coagulation: Platelets ≥150 = 0`);
+    details.push(`Coagulation: Platelets ≥${SOFA_PLATELET_THRESHOLD_MILD} = 0`);
   }
   score += coagulationScore;
 
   let liverScore = 0;
-  if (inputs.bilirubin >= 12) {
+  if (inputs.bilirubin >= SOFA_BILIRUBIN_THRESHOLD_CRITICAL) {
     liverScore = 4;
-    details.push(`Liver: Bilirubin ≥12 mg/dL = 4`);
-  } else if (inputs.bilirubin >= 6) {
+    details.push(`Liver: Bilirubin ≥${SOFA_BILIRUBIN_THRESHOLD_CRITICAL} mg/dL = 4`);
+  } else if (inputs.bilirubin >= SOFA_BILIRUBIN_THRESHOLD_SEVERE) {
     liverScore = 3;
-    details.push(`Liver: Bilirubin ≥6 mg/dL = 3`);
-  } else if (inputs.bilirubin >= 2) {
+    details.push(`Liver: Bilirubin ≥${SOFA_BILIRUBIN_THRESHOLD_SEVERE} mg/dL = 3`);
+  } else if (inputs.bilirubin >= SOFA_BILIRUBIN_THRESHOLD_MODERATE) {
     liverScore = 2;
-    details.push(`Liver: Bilirubin ≥2 mg/dL = 2`);
-  } else if (inputs.bilirubin >= 1.2) {
+    details.push(`Liver: Bilirubin ≥${SOFA_BILIRUBIN_THRESHOLD_MODERATE} mg/dL = 2`);
+  } else if (inputs.bilirubin >= SOFA_BILIRUBIN_THRESHOLD_MILD) {
     liverScore = 1;
-    details.push(`Liver: Bilirubin ≥1.2 mg/dL = 1`);
+    details.push(`Liver: Bilirubin ≥${SOFA_BILIRUBIN_THRESHOLD_MILD} mg/dL = 1`);
   } else {
-    details.push(`Liver: Bilirubin <1.2 mg/dL = 0`);
+    details.push(`Liver: Bilirubin <${SOFA_BILIRUBIN_THRESHOLD_MILD} mg/dL = 0`);
   }
   score += liverScore;
 
@@ -1124,11 +1210,11 @@ function calculateSOFA(inputs: z.infer<typeof SOFAInputSchema>): ScoreResult {
     cardiovascularScore = 2;
     details.push(`Cardiovascular: Dopamine ≤5 or dobutamine any dose = 2`);
   } else if (inputs.meanArterialPressure !== undefined) {
-    if (inputs.meanArterialPressure < 70) {
+    if (inputs.meanArterialPressure < SOFA_MAP_THRESHOLD) {
       cardiovascularScore = 1;
-      details.push(`Cardiovascular: MAP <70 mmHg = 1`);
+      details.push(`Cardiovascular: MAP <${SOFA_MAP_THRESHOLD} mmHg = 1`);
     } else {
-      details.push(`Cardiovascular: MAP ≥70 mmHg, no vasopressors = 0`);
+      details.push(`Cardiovascular: MAP ≥${SOFA_MAP_THRESHOLD} mmHg, no vasopressors = 0`);
     }
   } else {
     details.push(`Cardiovascular: No vasopressors = 0`);
@@ -1136,44 +1222,44 @@ function calculateSOFA(inputs: z.infer<typeof SOFAInputSchema>): ScoreResult {
   score += cardiovascularScore;
 
   let cnsScore = 0;
-  if (inputs.glasgowComaScale < 6) {
+  if (inputs.glasgowComaScale < SOFA_GCS_THRESHOLD_CRITICAL) {
     cnsScore = 4;
-    details.push(`CNS: Glasgow Coma Scale <6 = 4`);
-  } else if (inputs.glasgowComaScale < 10) {
+    details.push(`CNS: Glasgow Coma Scale <${SOFA_GCS_THRESHOLD_CRITICAL} = 4`);
+  } else if (inputs.glasgowComaScale < SOFA_GCS_THRESHOLD_SEVERE) {
     cnsScore = 3;
-    details.push(`CNS: Glasgow Coma Scale 6-9 = 3`);
-  } else if (inputs.glasgowComaScale < 13) {
+    details.push(`CNS: Glasgow Coma Scale ${SOFA_GCS_THRESHOLD_CRITICAL}-${SOFA_GCS_THRESHOLD_SEVERE - 1} = 3`);
+  } else if (inputs.glasgowComaScale < SOFA_GCS_THRESHOLD_MODERATE) {
     cnsScore = 2;
-    details.push(`CNS: Glasgow Coma Scale 10-12 = 2`);
-  } else if (inputs.glasgowComaScale < 15) {
+    details.push(`CNS: Glasgow Coma Scale ${SOFA_GCS_THRESHOLD_SEVERE}-${SOFA_GCS_THRESHOLD_MODERATE - 1} = 2`);
+  } else if (inputs.glasgowComaScale < SOFA_GCS_THRESHOLD_MILD) {
     cnsScore = 1;
-    details.push(`CNS: Glasgow Coma Scale 13-14 = 1`);
+    details.push(`CNS: Glasgow Coma Scale ${SOFA_GCS_THRESHOLD_MODERATE}-${SOFA_GCS_THRESHOLD_MILD - 1} = 1`);
   } else {
-    details.push(`CNS: Glasgow Coma Scale 15 = 0`);
+    details.push(`CNS: Glasgow Coma Scale ${SOFA_GCS_THRESHOLD_MILD} = 0`);
   }
   score += cnsScore;
 
   let renalScore = 0;
-  if (inputs.urineOutput !== undefined && inputs.urineOutput < 200) {
+  if (inputs.urineOutput !== undefined && inputs.urineOutput < SOFA_URINE_OUTPUT_THRESHOLD_CRITICAL) {
     renalScore = 4;
-    details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <200 mL/day = 4`);
-  } else if (inputs.creatinine >= 5) {
+    details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <${SOFA_URINE_OUTPUT_THRESHOLD_CRITICAL} mL/day = 4`);
+  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_CRITICAL) {
     renalScore = 4;
-    details.push(`Renal: Creatinine ≥5 mg/dL = 4`);
-  } else if (inputs.urineOutput !== undefined && inputs.urineOutput < 500) {
+    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_CRITICAL} mg/dL = 4`);
+  } else if (inputs.urineOutput !== undefined && inputs.urineOutput < SOFA_URINE_OUTPUT_THRESHOLD_SEVERE) {
     renalScore = 3;
-    details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <500 mL/day = 3`);
-  } else if (inputs.creatinine >= 3.5) {
+    details.push(`Renal: Creatinine ${inputs.creatinine.toFixed(1)} mg/dL and urine output <${SOFA_URINE_OUTPUT_THRESHOLD_SEVERE} mL/day = 3`);
+  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_SEVERE) {
     renalScore = 3;
-    details.push(`Renal: Creatinine ≥3.5 mg/dL = 3`);
-  } else if (inputs.creatinine >= 2) {
+    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_SEVERE} mg/dL = 3`);
+  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_MODERATE) {
     renalScore = 2;
-    details.push(`Renal: Creatinine ≥2 mg/dL = 2`);
-  } else if (inputs.creatinine >= 1.2) {
+    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_MODERATE} mg/dL = 2`);
+  } else if (inputs.creatinine >= SOFA_CREATININE_THRESHOLD_MILD) {
     renalScore = 1;
-    details.push(`Renal: Creatinine ≥1.2 mg/dL = 1`);
+    details.push(`Renal: Creatinine ≥${SOFA_CREATININE_THRESHOLD_MILD} mg/dL = 1`);
   } else {
-    details.push(`Renal: Creatinine <1.2 mg/dL = 0`);
+    details.push(`Renal: Creatinine <${SOFA_CREATININE_THRESHOLD_MILD} mg/dL = 0`);
   }
   score += renalScore;
 
@@ -1213,19 +1299,19 @@ function calculatePERC(inputs: z.infer<typeof PERCInputSchema>): ScoreResult {
   let score = 0;
   const details: string[] = [];
 
-  if (inputs.age >= 50) {
+  if (inputs.age >= PERC_AGE_THRESHOLD) {
     score += 1;
-    details.push('Age ≥50 years: +1');
+    details.push(`Age ≥${PERC_AGE_THRESHOLD} years: +1`);
   }
 
-  if (inputs.heartRate >= 100) {
+  if (inputs.heartRate >= PERC_HEART_RATE_THRESHOLD) {
     score += 1;
-    details.push('Heart rate ≥100 bpm: +1');
+    details.push(`Heart rate ≥${PERC_HEART_RATE_THRESHOLD} bpm: +1`);
   }
 
-  if (inputs.oxygenSaturation < 95) {
+  if (inputs.oxygenSaturation < PERC_O2_SAT_THRESHOLD) {
     score += 1;
-    details.push('O2 saturation <95% on room air: +1');
+    details.push(`O2 saturation <${PERC_O2_SAT_THRESHOLD}% on room air: +1`);
   }
 
   if (inputs.unilateralLegSwelling) {
