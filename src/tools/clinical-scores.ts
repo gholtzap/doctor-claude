@@ -1275,51 +1275,71 @@ function calculatePERC(inputs: z.infer<typeof PERCInputSchema>): ScoreResult {
   };
 }
 
+const calculatorMap = {
+  curb65: {
+    schema: CURB65InputSchema,
+    calculate: calculateCURB65,
+  },
+  centor: {
+    schema: CentorInputSchema,
+    calculate: calculateCentor,
+  },
+  wells_dvt: {
+    schema: WellsDVTInputSchema,
+    calculate: calculateWellsDVT,
+  },
+  wells_pe: {
+    schema: WellsPEInputSchema,
+    calculate: calculateWellsPE,
+  },
+  heart: {
+    schema: HEARTInputSchema,
+    calculate: calculateHEART,
+  },
+  cha2ds2_vasc: {
+    schema: CHA2DS2VAScInputSchema,
+    calculate: calculateCHA2DS2VASc,
+  },
+  gcs: {
+    schema: GCSInputSchema,
+    calculate: calculateGCS,
+  },
+  qsofa: {
+    schema: QSOFAInputSchema,
+    calculate: calculateQSOFA,
+  },
+  alvarado: {
+    schema: AlvaradoInputSchema,
+    calculate: calculateAlvarado,
+  },
+  glasgow_blatchford: {
+    schema: GlasgowBlatchfordInputSchema,
+    calculate: calculateGlasgowBlatchford,
+  },
+  nihss: {
+    schema: NIHSSInputSchema,
+    calculate: calculateNIHSS,
+  },
+  sofa: {
+    schema: SOFAInputSchema,
+    calculate: calculateSOFA,
+  },
+  perc: {
+    schema: PERCInputSchema,
+    calculate: calculatePERC,
+  },
+} as const;
+
 export function calculateClinicalScore(
   args: CalculateClinicalScoreInput
 ): ScoreResult {
   const { calculator, inputs } = args;
 
-  if (calculator === 'curb65') {
-    const validated = CURB65InputSchema.parse(inputs);
-    return calculateCURB65(validated);
-  } else if (calculator === 'centor') {
-    const validated = CentorInputSchema.parse(inputs);
-    return calculateCentor(validated);
-  } else if (calculator === 'wells_dvt') {
-    const validated = WellsDVTInputSchema.parse(inputs);
-    return calculateWellsDVT(validated);
-  } else if (calculator === 'wells_pe') {
-    const validated = WellsPEInputSchema.parse(inputs);
-    return calculateWellsPE(validated);
-  } else if (calculator === 'heart') {
-    const validated = HEARTInputSchema.parse(inputs);
-    return calculateHEART(validated);
-  } else if (calculator === 'cha2ds2_vasc') {
-    const validated = CHA2DS2VAScInputSchema.parse(inputs);
-    return calculateCHA2DS2VASc(validated);
-  } else if (calculator === 'gcs') {
-    const validated = GCSInputSchema.parse(inputs);
-    return calculateGCS(validated);
-  } else if (calculator === 'qsofa') {
-    const validated = QSOFAInputSchema.parse(inputs);
-    return calculateQSOFA(validated);
-  } else if (calculator === 'alvarado') {
-    const validated = AlvaradoInputSchema.parse(inputs);
-    return calculateAlvarado(validated);
-  } else if (calculator === 'glasgow_blatchford') {
-    const validated = GlasgowBlatchfordInputSchema.parse(inputs);
-    return calculateGlasgowBlatchford(validated);
-  } else if (calculator === 'nihss') {
-    const validated = NIHSSInputSchema.parse(inputs);
-    return calculateNIHSS(validated);
-  } else if (calculator === 'sofa') {
-    const validated = SOFAInputSchema.parse(inputs);
-    return calculateSOFA(validated);
-  } else if (calculator === 'perc') {
-    const validated = PERCInputSchema.parse(inputs);
-    return calculatePERC(validated);
+  const config = calculatorMap[calculator];
+  if (!config) {
+    throw new Error(`Unknown calculator: ${calculator}`);
   }
 
-  throw new Error(`Unknown calculator: ${calculator}`);
+  const validated = config.schema.parse(inputs);
+  return config.calculate(validated as any);
 }
