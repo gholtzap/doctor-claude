@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const formatEnumLabel = (value: string) => value.replace(/_/g, ' ');
+
 const CURB65InputSchema = z.object({
   confusion: z.boolean().describe('New onset confusion or altered mental status'),
   urea: z.number().optional().describe('Blood urea nitrogen (BUN) in mg/dL, or urea in mmol/L'),
@@ -608,7 +610,7 @@ function calculateGCS(inputs: z.infer<typeof GCSInputSchema>): ScoreResult {
   };
   const eyeScore = eyeScores[inputs.eyeOpening];
   score += eyeScore;
-  details.push(`Eye opening (${inputs.eyeOpening.replace(/_/g, ' ')}): ${eyeScore}`);
+  details.push(`Eye opening (${formatEnumLabel(inputs.eyeOpening)}): ${eyeScore}`);
 
   const verbalScores = {
     oriented: 5,
@@ -619,7 +621,7 @@ function calculateGCS(inputs: z.infer<typeof GCSInputSchema>): ScoreResult {
   };
   const verbalScore = verbalScores[inputs.verbalResponse];
   score += verbalScore;
-  details.push(`Verbal response (${inputs.verbalResponse.replace(/_/g, ' ')}): ${verbalScore}`);
+  details.push(`Verbal response (${formatEnumLabel(inputs.verbalResponse)}): ${verbalScore}`);
 
   const motorScores = {
     obeys_commands: 6,
@@ -631,7 +633,7 @@ function calculateGCS(inputs: z.infer<typeof GCSInputSchema>): ScoreResult {
   };
   const motorScore = motorScores[inputs.motorResponse];
   score += motorScore;
-  details.push(`Motor response (${inputs.motorResponse.replace(/_/g, ' ')}): ${motorScore}`);
+  details.push(`Motor response (${formatEnumLabel(inputs.motorResponse)}): ${motorScore}`);
 
   let interpretation: string;
   let recommendation: string;
@@ -905,7 +907,7 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     coma: 3,
   };
   score += locScores[inputs.levelOfConsciousness];
-  details.push(`LOC: ${inputs.levelOfConsciousness.replace(/_/g, ' ')} = ${locScores[inputs.levelOfConsciousness]}`);
+  details.push(`LOC: ${formatEnumLabel(inputs.levelOfConsciousness)} = ${locScores[inputs.levelOfConsciousness]}`);
 
   const questionScores = {
     both_correct: 0,
@@ -913,10 +915,10 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     neither_correct: 2,
   };
   score += questionScores[inputs.locQuestions];
-  details.push(`LOC Questions: ${inputs.locQuestions.replace(/_/g, ' ')} = ${questionScores[inputs.locQuestions]}`);
+  details.push(`LOC Questions: ${formatEnumLabel(inputs.locQuestions)} = ${questionScores[inputs.locQuestions]}`);
 
   score += questionScores[inputs.locCommands];
-  details.push(`LOC Commands: ${inputs.locCommands.replace(/_/g, ' ')} = ${questionScores[inputs.locCommands]}`);
+  details.push(`LOC Commands: ${formatEnumLabel(inputs.locCommands)} = ${questionScores[inputs.locCommands]}`);
 
   const gazeScores = {
     normal: 0,
@@ -924,7 +926,7 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     forced_deviation: 2,
   };
   score += gazeScores[inputs.bestGaze];
-  details.push(`Best Gaze: ${inputs.bestGaze.replace(/_/g, ' ')} = ${gazeScores[inputs.bestGaze]}`);
+  details.push(`Best Gaze: ${formatEnumLabel(inputs.bestGaze)} = ${gazeScores[inputs.bestGaze]}`);
 
   const visualScores = {
     no_loss: 0,
@@ -932,7 +934,7 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     complete_hemianopia: 3,
   };
   score += visualScores[inputs.visual];
-  details.push(`Visual Fields: ${inputs.visual.replace(/_/g, ' ')} = ${visualScores[inputs.visual]}`);
+  details.push(`Visual Fields: ${formatEnumLabel(inputs.visual)} = ${visualScores[inputs.visual]}`);
 
   const facialScores = {
     normal: 0,
@@ -954,19 +956,19 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
 
   const leftArmScore = motorScores[inputs.motorArmLeft];
   score += leftArmScore;
-  details.push(`Motor Left Arm: ${inputs.motorArmLeft.replace(/_/g, ' ')} = ${leftArmScore}`);
+  details.push(`Motor Left Arm: ${formatEnumLabel(inputs.motorArmLeft)} = ${leftArmScore}`);
 
   const rightArmScore = motorScores[inputs.motorArmRight];
   score += rightArmScore;
-  details.push(`Motor Right Arm: ${inputs.motorArmRight.replace(/_/g, ' ')} = ${rightArmScore}`);
+  details.push(`Motor Right Arm: ${formatEnumLabel(inputs.motorArmRight)} = ${rightArmScore}`);
 
   const leftLegScore = motorScores[inputs.motorLegLeft];
   score += leftLegScore;
-  details.push(`Motor Left Leg: ${inputs.motorLegLeft.replace(/_/g, ' ')} = ${leftLegScore}`);
+  details.push(`Motor Left Leg: ${formatEnumLabel(inputs.motorLegLeft)} = ${leftLegScore}`);
 
   const rightLegScore = motorScores[inputs.motorLegRight];
   score += rightLegScore;
-  details.push(`Motor Right Leg: ${inputs.motorLegRight.replace(/_/g, ' ')} = ${rightLegScore}`);
+  details.push(`Motor Right Leg: ${formatEnumLabel(inputs.motorLegRight)} = ${rightLegScore}`);
 
   const ataxiaScores = {
     absent: 0,
@@ -974,7 +976,7 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     present_two: 2,
   };
   score += ataxiaScores[inputs.limbAtaxia];
-  details.push(`Limb Ataxia: ${inputs.limbAtaxia.replace(/_/g, ' ')} = ${ataxiaScores[inputs.limbAtaxia]}`);
+  details.push(`Limb Ataxia: ${formatEnumLabel(inputs.limbAtaxia)} = ${ataxiaScores[inputs.limbAtaxia]}`);
 
   const sensoryScores = {
     normal: 0,
@@ -982,7 +984,7 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     severe_loss: 2,
   };
   score += sensoryScores[inputs.sensory];
-  details.push(`Sensory: ${inputs.sensory.replace(/_/g, ' ')} = ${sensoryScores[inputs.sensory]}`);
+  details.push(`Sensory: ${formatEnumLabel(inputs.sensory)} = ${sensoryScores[inputs.sensory]}`);
 
   const languageScores = {
     no_aphasia: 0,
@@ -991,7 +993,7 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     mute: 3,
   };
   score += languageScores[inputs.bestLanguage];
-  details.push(`Best Language: ${inputs.bestLanguage.replace(/_/g, ' ')} = ${languageScores[inputs.bestLanguage]}`);
+  details.push(`Best Language: ${formatEnumLabel(inputs.bestLanguage)} = ${languageScores[inputs.bestLanguage]}`);
 
   const dysarthriaScores = {
     normal: 0,
@@ -1008,7 +1010,7 @@ function calculateNIHSS(inputs: z.infer<typeof NIHSSInputSchema>): ScoreResult {
     profound_hemi_inattention: 2,
   };
   score += extinctionScores[inputs.extinctionInattention];
-  details.push(`Extinction/Inattention: ${inputs.extinctionInattention.replace(/_/g, ' ')} = ${extinctionScores[inputs.extinctionInattention]}`);
+  details.push(`Extinction/Inattention: ${formatEnumLabel(inputs.extinctionInattention)} = ${extinctionScores[inputs.extinctionInattention]}`);
 
   let interpretation: string;
   let recommendation: string;

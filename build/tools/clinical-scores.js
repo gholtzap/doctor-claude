@@ -1,4 +1,5 @@
 import { z } from 'zod';
+const formatEnumLabel = (value) => value.replace(/_/g, ' ');
 const CURB65InputSchema = z.object({
     confusion: z.boolean().describe('New onset confusion or altered mental status'),
     urea: z.number().optional().describe('Blood urea nitrogen (BUN) in mg/dL, or urea in mmol/L'),
@@ -546,7 +547,7 @@ function calculateGCS(inputs) {
     };
     const eyeScore = eyeScores[inputs.eyeOpening];
     score += eyeScore;
-    details.push(`Eye opening (${inputs.eyeOpening.replace(/_/g, ' ')}): ${eyeScore}`);
+    details.push(`Eye opening (${formatEnumLabel(inputs.eyeOpening)}): ${eyeScore}`);
     const verbalScores = {
         oriented: 5,
         confused: 4,
@@ -556,7 +557,7 @@ function calculateGCS(inputs) {
     };
     const verbalScore = verbalScores[inputs.verbalResponse];
     score += verbalScore;
-    details.push(`Verbal response (${inputs.verbalResponse.replace(/_/g, ' ')}): ${verbalScore}`);
+    details.push(`Verbal response (${formatEnumLabel(inputs.verbalResponse)}): ${verbalScore}`);
     const motorScores = {
         obeys_commands: 6,
         localizes_pain: 5,
@@ -567,7 +568,7 @@ function calculateGCS(inputs) {
     };
     const motorScore = motorScores[inputs.motorResponse];
     score += motorScore;
-    details.push(`Motor response (${inputs.motorResponse.replace(/_/g, ' ')}): ${motorScore}`);
+    details.push(`Motor response (${formatEnumLabel(inputs.motorResponse)}): ${motorScore}`);
     let interpretation;
     let recommendation;
     let riskCategory;
@@ -824,30 +825,30 @@ function calculateNIHSS(inputs) {
         coma: 3,
     };
     score += locScores[inputs.levelOfConsciousness];
-    details.push(`LOC: ${inputs.levelOfConsciousness.replace(/_/g, ' ')} = ${locScores[inputs.levelOfConsciousness]}`);
+    details.push(`LOC: ${formatEnumLabel(inputs.levelOfConsciousness)} = ${locScores[inputs.levelOfConsciousness]}`);
     const questionScores = {
         both_correct: 0,
         one_correct: 1,
         neither_correct: 2,
     };
     score += questionScores[inputs.locQuestions];
-    details.push(`LOC Questions: ${inputs.locQuestions.replace(/_/g, ' ')} = ${questionScores[inputs.locQuestions]}`);
+    details.push(`LOC Questions: ${formatEnumLabel(inputs.locQuestions)} = ${questionScores[inputs.locQuestions]}`);
     score += questionScores[inputs.locCommands];
-    details.push(`LOC Commands: ${inputs.locCommands.replace(/_/g, ' ')} = ${questionScores[inputs.locCommands]}`);
+    details.push(`LOC Commands: ${formatEnumLabel(inputs.locCommands)} = ${questionScores[inputs.locCommands]}`);
     const gazeScores = {
         normal: 0,
         partial_palsy: 1,
         forced_deviation: 2,
     };
     score += gazeScores[inputs.bestGaze];
-    details.push(`Best Gaze: ${inputs.bestGaze.replace(/_/g, ' ')} = ${gazeScores[inputs.bestGaze]}`);
+    details.push(`Best Gaze: ${formatEnumLabel(inputs.bestGaze)} = ${gazeScores[inputs.bestGaze]}`);
     const visualScores = {
         no_loss: 0,
         partial_hemianopia: 1,
         complete_hemianopia: 3,
     };
     score += visualScores[inputs.visual];
-    details.push(`Visual Fields: ${inputs.visual.replace(/_/g, ' ')} = ${visualScores[inputs.visual]}`);
+    details.push(`Visual Fields: ${formatEnumLabel(inputs.visual)} = ${visualScores[inputs.visual]}`);
     const facialScores = {
         normal: 0,
         minor: 1,
@@ -866,30 +867,30 @@ function calculateNIHSS(inputs) {
     };
     const leftArmScore = motorScores[inputs.motorArmLeft];
     score += leftArmScore;
-    details.push(`Motor Left Arm: ${inputs.motorArmLeft.replace(/_/g, ' ')} = ${leftArmScore}`);
+    details.push(`Motor Left Arm: ${formatEnumLabel(inputs.motorArmLeft)} = ${leftArmScore}`);
     const rightArmScore = motorScores[inputs.motorArmRight];
     score += rightArmScore;
-    details.push(`Motor Right Arm: ${inputs.motorArmRight.replace(/_/g, ' ')} = ${rightArmScore}`);
+    details.push(`Motor Right Arm: ${formatEnumLabel(inputs.motorArmRight)} = ${rightArmScore}`);
     const leftLegScore = motorScores[inputs.motorLegLeft];
     score += leftLegScore;
-    details.push(`Motor Left Leg: ${inputs.motorLegLeft.replace(/_/g, ' ')} = ${leftLegScore}`);
+    details.push(`Motor Left Leg: ${formatEnumLabel(inputs.motorLegLeft)} = ${leftLegScore}`);
     const rightLegScore = motorScores[inputs.motorLegRight];
     score += rightLegScore;
-    details.push(`Motor Right Leg: ${inputs.motorLegRight.replace(/_/g, ' ')} = ${rightLegScore}`);
+    details.push(`Motor Right Leg: ${formatEnumLabel(inputs.motorLegRight)} = ${rightLegScore}`);
     const ataxiaScores = {
         absent: 0,
         present_one: 1,
         present_two: 2,
     };
     score += ataxiaScores[inputs.limbAtaxia];
-    details.push(`Limb Ataxia: ${inputs.limbAtaxia.replace(/_/g, ' ')} = ${ataxiaScores[inputs.limbAtaxia]}`);
+    details.push(`Limb Ataxia: ${formatEnumLabel(inputs.limbAtaxia)} = ${ataxiaScores[inputs.limbAtaxia]}`);
     const sensoryScores = {
         normal: 0,
         mild_loss: 1,
         severe_loss: 2,
     };
     score += sensoryScores[inputs.sensory];
-    details.push(`Sensory: ${inputs.sensory.replace(/_/g, ' ')} = ${sensoryScores[inputs.sensory]}`);
+    details.push(`Sensory: ${formatEnumLabel(inputs.sensory)} = ${sensoryScores[inputs.sensory]}`);
     const languageScores = {
         no_aphasia: 0,
         mild_aphasia: 1,
@@ -897,7 +898,7 @@ function calculateNIHSS(inputs) {
         mute: 3,
     };
     score += languageScores[inputs.bestLanguage];
-    details.push(`Best Language: ${inputs.bestLanguage.replace(/_/g, ' ')} = ${languageScores[inputs.bestLanguage]}`);
+    details.push(`Best Language: ${formatEnumLabel(inputs.bestLanguage)} = ${languageScores[inputs.bestLanguage]}`);
     const dysarthriaScores = {
         normal: 0,
         mild: 1,
@@ -912,7 +913,7 @@ function calculateNIHSS(inputs) {
         profound_hemi_inattention: 2,
     };
     score += extinctionScores[inputs.extinctionInattention];
-    details.push(`Extinction/Inattention: ${inputs.extinctionInattention.replace(/_/g, ' ')} = ${extinctionScores[inputs.extinctionInattention]}`);
+    details.push(`Extinction/Inattention: ${formatEnumLabel(inputs.extinctionInattention)} = ${extinctionScores[inputs.extinctionInattention]}`);
     let interpretation;
     let recommendation;
     let riskCategory;
@@ -1188,59 +1189,66 @@ function calculatePERC(inputs) {
         details: details.join('\n'),
     };
 }
+const calculatorMap = {
+    curb65: {
+        schema: CURB65InputSchema,
+        calculate: calculateCURB65,
+    },
+    centor: {
+        schema: CentorInputSchema,
+        calculate: calculateCentor,
+    },
+    wells_dvt: {
+        schema: WellsDVTInputSchema,
+        calculate: calculateWellsDVT,
+    },
+    wells_pe: {
+        schema: WellsPEInputSchema,
+        calculate: calculateWellsPE,
+    },
+    heart: {
+        schema: HEARTInputSchema,
+        calculate: calculateHEART,
+    },
+    cha2ds2_vasc: {
+        schema: CHA2DS2VAScInputSchema,
+        calculate: calculateCHA2DS2VASc,
+    },
+    gcs: {
+        schema: GCSInputSchema,
+        calculate: calculateGCS,
+    },
+    qsofa: {
+        schema: QSOFAInputSchema,
+        calculate: calculateQSOFA,
+    },
+    alvarado: {
+        schema: AlvaradoInputSchema,
+        calculate: calculateAlvarado,
+    },
+    glasgow_blatchford: {
+        schema: GlasgowBlatchfordInputSchema,
+        calculate: calculateGlasgowBlatchford,
+    },
+    nihss: {
+        schema: NIHSSInputSchema,
+        calculate: calculateNIHSS,
+    },
+    sofa: {
+        schema: SOFAInputSchema,
+        calculate: calculateSOFA,
+    },
+    perc: {
+        schema: PERCInputSchema,
+        calculate: calculatePERC,
+    },
+};
 export function calculateClinicalScore(args) {
     const { calculator, inputs } = args;
-    if (calculator === 'curb65') {
-        const validated = CURB65InputSchema.parse(inputs);
-        return calculateCURB65(validated);
+    const config = calculatorMap[calculator];
+    if (!config) {
+        throw new Error(`Unknown calculator: ${calculator}`);
     }
-    else if (calculator === 'centor') {
-        const validated = CentorInputSchema.parse(inputs);
-        return calculateCentor(validated);
-    }
-    else if (calculator === 'wells_dvt') {
-        const validated = WellsDVTInputSchema.parse(inputs);
-        return calculateWellsDVT(validated);
-    }
-    else if (calculator === 'wells_pe') {
-        const validated = WellsPEInputSchema.parse(inputs);
-        return calculateWellsPE(validated);
-    }
-    else if (calculator === 'heart') {
-        const validated = HEARTInputSchema.parse(inputs);
-        return calculateHEART(validated);
-    }
-    else if (calculator === 'cha2ds2_vasc') {
-        const validated = CHA2DS2VAScInputSchema.parse(inputs);
-        return calculateCHA2DS2VASc(validated);
-    }
-    else if (calculator === 'gcs') {
-        const validated = GCSInputSchema.parse(inputs);
-        return calculateGCS(validated);
-    }
-    else if (calculator === 'qsofa') {
-        const validated = QSOFAInputSchema.parse(inputs);
-        return calculateQSOFA(validated);
-    }
-    else if (calculator === 'alvarado') {
-        const validated = AlvaradoInputSchema.parse(inputs);
-        return calculateAlvarado(validated);
-    }
-    else if (calculator === 'glasgow_blatchford') {
-        const validated = GlasgowBlatchfordInputSchema.parse(inputs);
-        return calculateGlasgowBlatchford(validated);
-    }
-    else if (calculator === 'nihss') {
-        const validated = NIHSSInputSchema.parse(inputs);
-        return calculateNIHSS(validated);
-    }
-    else if (calculator === 'sofa') {
-        const validated = SOFAInputSchema.parse(inputs);
-        return calculateSOFA(validated);
-    }
-    else if (calculator === 'perc') {
-        const validated = PERCInputSchema.parse(inputs);
-        return calculatePERC(validated);
-    }
-    throw new Error(`Unknown calculator: ${calculator}`);
+    const validated = config.schema.parse(inputs);
+    return config.calculate(validated);
 }
