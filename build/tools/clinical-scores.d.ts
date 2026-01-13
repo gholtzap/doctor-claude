@@ -1,6 +1,6 @@
 import { z } from 'zod';
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -175,9 +175,69 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         respiratoryRate: number;
         alteredMentalStatus: boolean;
         systolicBloodPressure: number;
+    }>, z.ZodObject<{
+        rlqPain: z.ZodBoolean;
+        anorexia: z.ZodBoolean;
+        nauseaVomiting: z.ZodBoolean;
+        rlqTenderness: z.ZodBoolean;
+        reboundTenderness: z.ZodBoolean;
+        elevatedTemperature: z.ZodBoolean;
+        leukocytosis: z.ZodBoolean;
+        leftShift: z.ZodBoolean;
+        migrationPain: z.ZodBoolean;
+    }, "strip", z.ZodTypeAny, {
+        rlqPain: boolean;
+        anorexia: boolean;
+        nauseaVomiting: boolean;
+        rlqTenderness: boolean;
+        reboundTenderness: boolean;
+        elevatedTemperature: boolean;
+        leukocytosis: boolean;
+        leftShift: boolean;
+        migrationPain: boolean;
+    }, {
+        rlqPain: boolean;
+        anorexia: boolean;
+        nauseaVomiting: boolean;
+        rlqTenderness: boolean;
+        reboundTenderness: boolean;
+        elevatedTemperature: boolean;
+        leukocytosis: boolean;
+        leftShift: boolean;
+        migrationPain: boolean;
+    }>, z.ZodObject<{
+        bun: z.ZodOptional<z.ZodNumber>;
+        hemoglobin: z.ZodNumber;
+        systolicBloodPressure: z.ZodNumber;
+        pulse: z.ZodNumber;
+        melena: z.ZodBoolean;
+        syncope: z.ZodBoolean;
+        hepaticDisease: z.ZodBoolean;
+        cardiacFailure: z.ZodBoolean;
+        sex: z.ZodEnum<["male", "female"]>;
+    }, "strip", z.ZodTypeAny, {
+        sex: "male" | "female";
+        systolicBloodPressure: number;
+        hemoglobin: number;
+        pulse: number;
+        melena: boolean;
+        syncope: boolean;
+        hepaticDisease: boolean;
+        cardiacFailure: boolean;
+        bun?: number | undefined;
+    }, {
+        sex: "male" | "female";
+        systolicBloodPressure: number;
+        hemoglobin: number;
+        pulse: number;
+        melena: boolean;
+        syncope: boolean;
+        hepaticDisease: boolean;
+        cardiacFailure: boolean;
+        bun?: number | undefined;
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford";
     inputs: {
         age: number;
         confusion: boolean;
@@ -234,9 +294,29 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         respiratoryRate: number;
         alteredMentalStatus: boolean;
         systolicBloodPressure: number;
+    } | {
+        rlqPain: boolean;
+        anorexia: boolean;
+        nauseaVomiting: boolean;
+        rlqTenderness: boolean;
+        reboundTenderness: boolean;
+        elevatedTemperature: boolean;
+        leukocytosis: boolean;
+        leftShift: boolean;
+        migrationPain: boolean;
+    } | {
+        sex: "male" | "female";
+        systolicBloodPressure: number;
+        hemoglobin: number;
+        pulse: number;
+        melena: boolean;
+        syncope: boolean;
+        hepaticDisease: boolean;
+        cardiacFailure: boolean;
+        bun?: number | undefined;
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford";
     inputs: {
         age: number;
         confusion: boolean;
@@ -293,6 +373,26 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         respiratoryRate: number;
         alteredMentalStatus: boolean;
         systolicBloodPressure: number;
+    } | {
+        rlqPain: boolean;
+        anorexia: boolean;
+        nauseaVomiting: boolean;
+        rlqTenderness: boolean;
+        reboundTenderness: boolean;
+        elevatedTemperature: boolean;
+        leukocytosis: boolean;
+        leftShift: boolean;
+        migrationPain: boolean;
+    } | {
+        sex: "male" | "female";
+        systolicBloodPressure: number;
+        hemoglobin: number;
+        pulse: number;
+        melena: boolean;
+        syncope: boolean;
+        hepaticDisease: boolean;
+        cardiacFailure: boolean;
+        bun?: number | undefined;
     };
 }>;
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;

@@ -84,9 +84,21 @@ const AlvaradoInputSchema = z.object({
   migrationPain: z.boolean().describe('Migration of pain from periumbilical area to right lower quadrant'),
 });
 
+const GlasgowBlatchfordInputSchema = z.object({
+  bun: z.number().optional().describe('Blood urea nitrogen (BUN) in mg/dL, or urea in mmol/L'),
+  hemoglobin: z.number().describe('Hemoglobin in g/dL'),
+  systolicBloodPressure: z.number().describe('Systolic blood pressure in mmHg'),
+  pulse: z.number().describe('Heart rate in beats per minute'),
+  melena: z.boolean().describe('Presentation with melena (black, tarry stools)'),
+  syncope: z.boolean().describe('Presentation with syncope (fainting)'),
+  hepaticDisease: z.boolean().describe('History of hepatic disease (cirrhosis, chronic liver disease)'),
+  cardiacFailure: z.boolean().describe('History of cardiac failure'),
+  sex: z.enum(['male', 'female']).describe('Biological sex (affects hemoglobin scoring)'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado']).describe('Which clinical calculator to use'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford']).describe('Which clinical calculator to use'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
@@ -726,6 +738,120 @@ function calculateAlvarado(inputs: z.infer<typeof AlvaradoInputSchema>): ScoreRe
   };
 }
 
+function calculateGlasgowBlatchford(inputs: z.infer<typeof GlasgowBlatchfordInputSchema>): ScoreResult {
+  let score = 0;
+  const details: string[] = [];
+
+  if (inputs.bun !== undefined) {
+    const bunMgDl = inputs.bun > 50 ? inputs.bun : inputs.bun * 2.8;
+    if (bunMgDl >= 70) {
+      score += 6;
+      details.push('BUN ≥70 mg/dL: +6');
+    } else if (bunMgDl >= 56) {
+      score += 4;
+      details.push('BUN 56-69.9 mg/dL: +4');
+    } else if (bunMgDl >= 28) {
+      score += 3;
+      details.push('BUN 28-55.9 mg/dL: +3');
+    } else if (bunMgDl >= 18.2) {
+      score += 2;
+      details.push('BUN 18.2-27.9 mg/dL: +2');
+    }
+  }
+
+  if (inputs.sex === 'male') {
+    if (inputs.hemoglobin < 10) {
+      score += 6;
+      details.push('Hemoglobin <10 g/dL (male): +6');
+    } else if (inputs.hemoglobin < 12) {
+      score += 3;
+      details.push('Hemoglobin 10-11.9 g/dL (male): +3');
+    } else if (inputs.hemoglobin >= 12 && inputs.hemoglobin < 13) {
+      score += 1;
+      details.push('Hemoglobin 12-12.9 g/dL (male): +1');
+    }
+  } else {
+    if (inputs.hemoglobin < 10) {
+      score += 6;
+      details.push('Hemoglobin <10 g/dL (female): +6');
+    } else if (inputs.hemoglobin >= 10 && inputs.hemoglobin < 12) {
+      score += 1;
+      details.push('Hemoglobin 10-11.9 g/dL (female): +1');
+    }
+  }
+
+  if (inputs.systolicBloodPressure < 90) {
+    score += 3;
+    details.push('Systolic BP <90 mmHg: +3');
+  } else if (inputs.systolicBloodPressure >= 90 && inputs.systolicBloodPressure < 100) {
+    score += 2;
+    details.push('Systolic BP 90-99 mmHg: +2');
+  } else if (inputs.systolicBloodPressure >= 100 && inputs.systolicBloodPressure < 110) {
+    score += 1;
+    details.push('Systolic BP 100-109 mmHg: +1');
+  }
+
+  if (inputs.pulse >= 100) {
+    score += 1;
+    details.push('Pulse ≥100 bpm: +1');
+  }
+
+  if (inputs.melena) {
+    score += 1;
+    details.push('Melena present: +1');
+  }
+
+  if (inputs.syncope) {
+    score += 2;
+    details.push('Syncope: +2');
+  }
+
+  if (inputs.hepaticDisease) {
+    score += 2;
+    details.push('Hepatic disease: +2');
+  }
+
+  if (inputs.cardiacFailure) {
+    score += 2;
+    details.push('Cardiac failure: +2');
+  }
+
+  let interpretation: string;
+  let recommendation: string;
+  let riskCategory: string;
+
+  if (score === 0) {
+    riskCategory = 'Very Low Risk';
+    interpretation = 'Very low risk of requiring intervention. Risk of rebleeding, intervention, or mortality is <1%.';
+    recommendation = 'Patient may be considered for early discharge and outpatient management. No endoscopy required urgently. Ensure adequate follow-up arranged. GBS of 0 has high negative predictive value for needing intervention.';
+  } else if (score <= 1) {
+    riskCategory = 'Low Risk';
+    interpretation = 'Low risk of requiring intervention. Still consider for potential outpatient management with close follow-up.';
+    recommendation = 'Consider early discharge with outpatient gastroenterology follow-up if clinically stable and no other concerning features. Some patients may benefit from brief observation period.';
+  } else if (score <= 5) {
+    riskCategory = 'Moderate Risk';
+    interpretation = 'Moderate risk of requiring intervention (transfusion, endoscopy, surgery).';
+    recommendation = 'Hospital admission recommended. Arrange upper endoscopy within 24 hours. Type and crossmatch blood. Consider proton pump inhibitor (PPI) infusion. Monitor hemoglobin serially. Gastroenterology consultation advised.';
+  } else if (score <= 11) {
+    riskCategory = 'High Risk';
+    interpretation = 'High risk of requiring urgent intervention. Significant likelihood of need for transfusion, endoscopic or surgical intervention.';
+    recommendation = 'Hospital admission required. Urgent upper endoscopy (within 12-24 hours). IV PPI infusion. Aggressive fluid resuscitation. Type and crossmatch 2-4 units PRBCs. Urgent gastroenterology consultation. Consider ICU admission for close monitoring. NPO status.';
+  } else {
+    riskCategory = 'Very High Risk';
+    interpretation = 'Very high risk of mortality and need for urgent intervention. Critical upper GI bleeding.';
+    recommendation = 'URGENT: ICU admission. Immediate gastroenterology consultation for urgent upper endoscopy. Large-bore IV access. Aggressive resuscitation with crystalloids and blood products. Transfuse to maintain Hgb >7 g/dL (>8 in cardiovascular disease). High-dose IV PPI. Consider intubation for airway protection if massive hematemesis or altered mental status. Surgery backup may be needed.';
+  }
+
+  return {
+    score,
+    maxScore: 23,
+    interpretation,
+    recommendation,
+    riskCategory,
+    details: details.join('\n'),
+  };
+}
+
 export async function calculateClinicalScore(
   args: CalculateClinicalScoreInput
 ): Promise<ScoreResult> {
@@ -758,6 +884,9 @@ export async function calculateClinicalScore(
   } else if (calculator === 'alvarado') {
     const validated = AlvaradoInputSchema.parse(inputs);
     return calculateAlvarado(validated);
+  } else if (calculator === 'glasgow_blatchford') {
+    const validated = GlasgowBlatchfordInputSchema.parse(inputs);
+    return calculateGlasgowBlatchford(validated);
   }
 
   throw new Error(`Unknown calculator: ${calculator}`);

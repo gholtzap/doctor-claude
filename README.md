@@ -50,7 +50,7 @@ All fields are optional. Copy `patient-profile.example.json` to `patient-profile
 
 Engages Claude in a systematic medical consultation process. Automatically includes your patient profile if available.
 
-**Important:** This is for educational purposes only. Claude will provide disclaimers and emphasize the need for professional medical care.
+**Important:** This is for educational purposes only. If you are feeling unwell, see a doctor.
 
 **Usage in Claude Code:**
 ```bash
