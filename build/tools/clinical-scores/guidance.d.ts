@@ -274,6 +274,14 @@ export declare const CLINICAL_GUIDANCE: {
             readonly recommendation: "Prompt treatment essential. Combination therapy (medication + psychotherapy) typically most effective. Consider SSRIs (first-line: sertraline, escitalopram) or SNRIs (venlafaxine, duloxetine). Refer to psychiatry or mental health professional. Screen for suicide risk, comorbid depression, and substance use. Short-term benzodiazepines may be considered for acute symptom relief while starting SSRI/SNRI (which takes 2-4 weeks to take effect), but avoid long-term use due to dependence risk. Close follow-up required.";
         };
     }];
+    readonly grace: {
+        threshold: number;
+        guidance: {
+            riskCategory: string;
+            interpretation: string | ((score: number) => string);
+            recommendation: string;
+        };
+    }[];
     readonly has_bled: readonly [{
         readonly threshold: 1;
         readonly guidance: {

@@ -420,6 +420,34 @@ export declare const GAD7InputSchema: z.ZodObject<{
     easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
     feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
 }>;
+export declare const GRACEInputSchema: z.ZodObject<{
+    age: z.ZodNumber;
+    heartRate: z.ZodNumber;
+    systolicBloodPressure: z.ZodNumber;
+    creatinine: z.ZodNumber;
+    killipClass: z.ZodNumber;
+    cardiacArrest: z.ZodBoolean;
+    stDeviation: z.ZodBoolean;
+    elevatedCardiacMarkers: z.ZodBoolean;
+}, "strip", z.ZodTypeAny, {
+    age: number;
+    systolicBloodPressure: number;
+    creatinine: number;
+    heartRate: number;
+    elevatedCardiacMarkers: boolean;
+    killipClass: number;
+    cardiacArrest: boolean;
+    stDeviation: boolean;
+}, {
+    age: number;
+    systolicBloodPressure: number;
+    creatinine: number;
+    heartRate: number;
+    elevatedCardiacMarkers: boolean;
+    killipClass: number;
+    cardiacArrest: boolean;
+    stDeviation: boolean;
+}>;
 export declare const HASBLEDInputSchema: z.ZodObject<{
     hypertension: z.ZodBoolean;
     abnormalRenalFunction: z.ZodBoolean;
@@ -452,7 +480,7 @@ export declare const HASBLEDInputSchema: z.ZodObject<{
     alcoholUse: boolean;
 }>;
 export declare const CalculateClinicalScoreSchema: z.ZodObject<{
-    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa", "perc", "timi", "meld", "gad7", "has_bled"]>;
+    calculator: z.ZodEnum<["curb65", "centor", "wells_dvt", "wells_pe", "heart", "cha2ds2_vasc", "gcs", "qsofa", "alvarado", "glasgow_blatchford", "nihss", "sofa", "perc", "timi", "meld", "gad7", "grace", "has_bled"]>;
     inputs: z.ZodUnion<[z.ZodObject<{
         confusion: z.ZodBoolean;
         urea: z.ZodOptional<z.ZodNumber>;
@@ -859,6 +887,33 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
         feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
     }>, z.ZodObject<{
+        age: z.ZodNumber;
+        heartRate: z.ZodNumber;
+        systolicBloodPressure: z.ZodNumber;
+        creatinine: z.ZodNumber;
+        killipClass: z.ZodNumber;
+        cardiacArrest: z.ZodBoolean;
+        stDeviation: z.ZodBoolean;
+        elevatedCardiacMarkers: z.ZodBoolean;
+    }, "strip", z.ZodTypeAny, {
+        age: number;
+        systolicBloodPressure: number;
+        creatinine: number;
+        heartRate: number;
+        elevatedCardiacMarkers: boolean;
+        killipClass: number;
+        cardiacArrest: boolean;
+        stDeviation: boolean;
+    }, {
+        age: number;
+        systolicBloodPressure: number;
+        creatinine: number;
+        heartRate: number;
+        elevatedCardiacMarkers: boolean;
+        killipClass: number;
+        cardiacArrest: boolean;
+        stDeviation: boolean;
+    }>, z.ZodObject<{
         hypertension: z.ZodBoolean;
         abnormalRenalFunction: z.ZodBoolean;
         abnormalLiverFunction: z.ZodBoolean;
@@ -890,7 +945,7 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         alcoholUse: boolean;
     }>]>;
 }, "strip", z.ZodTypeAny, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld" | "gad7" | "has_bled";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld" | "gad7" | "grace" | "has_bled";
     inputs: {
         age: number;
         confusion: boolean;
@@ -1024,6 +1079,15 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
         easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
         feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    } | {
+        age: number;
+        systolicBloodPressure: number;
+        creatinine: number;
+        heartRate: number;
+        elevatedCardiacMarkers: boolean;
+        killipClass: number;
+        cardiacArrest: boolean;
+        stDeviation: boolean;
     } | {
         age: number;
         medications: boolean;
@@ -1036,7 +1100,7 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         alcoholUse: boolean;
     };
 }, {
-    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld" | "gad7" | "has_bled";
+    calculator: "curb65" | "centor" | "wells_dvt" | "wells_pe" | "heart" | "cha2ds2_vasc" | "gcs" | "qsofa" | "alvarado" | "glasgow_blatchford" | "nihss" | "sofa" | "perc" | "timi" | "meld" | "gad7" | "grace" | "has_bled";
     inputs: {
         age: number;
         confusion: boolean;
@@ -1170,6 +1234,15 @@ export declare const CalculateClinicalScoreSchema: z.ZodObject<{
         restless: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
         easilyAnnoyed: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
         feelingAfraid: "not_at_all" | "several_days" | "more_than_half" | "nearly_every_day";
+    } | {
+        age: number;
+        systolicBloodPressure: number;
+        creatinine: number;
+        heartRate: number;
+        elevatedCardiacMarkers: boolean;
+        killipClass: number;
+        cardiacArrest: boolean;
+        stDeviation: boolean;
     } | {
         age: number;
         medications: boolean;
