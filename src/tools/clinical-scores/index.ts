@@ -19,6 +19,7 @@ import {
   GAD7InputSchema,
   GRACEInputSchema,
   HASBLEDInputSchema,
+  ABCD2InputSchema,
 } from './schemas.js';
 import { calculateCURB65 } from './calculators/curb65.js';
 import { calculateCentor } from './calculators/centor.js';
@@ -38,6 +39,7 @@ import { calculateMELD } from './calculators/meld.js';
 import { calculateGAD7 } from './calculators/gad7.js';
 import { calculateGRACE } from './calculators/grace.js';
 import { calculateHASBLED } from './calculators/has-bled.js';
+import { calculateABCD2 } from './calculators/abcd2.js';
 
 const calculatorMap = {
   curb65: {
@@ -111,6 +113,10 @@ const calculatorMap = {
   has_bled: {
     schema: HASBLEDInputSchema,
     calculate: calculateHASBLED,
+  },
+  abcd2: {
+    schema: ABCD2InputSchema,
+    calculate: calculateABCD2,
   },
 } as const;
 

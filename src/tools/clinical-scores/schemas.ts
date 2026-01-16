@@ -188,9 +188,20 @@ export const HASBLEDInputSchema = z.object({
   alcoholUse: z.boolean().describe('Alcohol use: ≥8 drinks per week'),
 });
 
+export const ABCD2InputSchema = z.object({
+  age: z.number().describe('Patient age in years'),
+  bloodPressure: z.object({
+    systolic: z.number().describe('Systolic blood pressure in mmHg'),
+    diastolic: z.number().describe('Diastolic blood pressure in mmHg'),
+  }).describe('Blood pressure at presentation'),
+  clinicalFeatures: z.enum(['unilateral_weakness', 'speech_impairment', 'neither']).describe('Clinical features of TIA: unilateral_weakness (2pts) - unilateral weakness with or without speech impairment; speech_impairment (1pt) - speech disturbance without weakness; neither (0pts) - other symptoms'),
+  duration: z.enum(['less_than_10', '10_to_59', '60_or_more']).describe('Duration of TIA symptoms: less_than_10 (0pts) - symptoms lasted <10 minutes; 10_to_59 (1pt) - symptoms lasted 10-59 minutes; 60_or_more (2pts) - symptoms lasted ≥60 minutes'),
+  diabetes: z.boolean().describe('History of diabetes mellitus'),
+});
+
 export const CalculateClinicalScoreSchema = z.object({
-  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa', 'perc', 'timi', 'meld', 'gad7', 'grace', 'has_bled']).describe('Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening), alvarado (appendicitis risk), glasgow_blatchford (upper GI bleeding risk), nihss (NIH Stroke Scale for stroke severity), sofa (Sequential Organ Failure Assessment for ICU mortality), perc (Pulmonary Embolism Rule-out Criteria), timi (TIMI Risk Score for NSTEMI/UA), meld (Model for End-Stage Liver Disease), gad7 (Generalized Anxiety Disorder-7 for anxiety screening), grace (GRACE Score for ACS risk stratification), has_bled (HAS-BLED bleeding risk on anticoagulation)'),
-  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema, TIMIInputSchema, MELDInputSchema, GAD7InputSchema, GRACEInputSchema, HASBLEDInputSchema]).describe('Input parameters for the selected calculator'),
+  calculator: z.enum(['curb65', 'centor', 'wells_dvt', 'wells_pe', 'heart', 'cha2ds2_vasc', 'gcs', 'qsofa', 'alvarado', 'glasgow_blatchford', 'nihss', 'sofa', 'perc', 'timi', 'meld', 'gad7', 'grace', 'has_bled', 'abcd2']).describe('Which clinical calculator to use: curb65 (pneumonia severity/mortality risk), centor (streptococcal pharyngitis probability), wells_dvt (DVT probability), wells_pe (PE probability), heart (chest pain cardiac event risk), cha2ds2_vasc (stroke risk in atrial fibrillation), gcs (Glasgow Coma Scale for consciousness), qsofa (sepsis screening), alvarado (appendicitis risk), glasgow_blatchford (upper GI bleeding risk), nihss (NIH Stroke Scale for stroke severity), sofa (Sequential Organ Failure Assessment for ICU mortality), perc (Pulmonary Embolism Rule-out Criteria), timi (TIMI Risk Score for NSTEMI/UA), meld (Model for End-Stage Liver Disease), gad7 (Generalized Anxiety Disorder-7 for anxiety screening), grace (GRACE Score for ACS risk stratification), has_bled (HAS-BLED bleeding risk on anticoagulation), abcd2 (ABCD2 Score for TIA stroke risk prediction)'),
+  inputs: z.union([CURB65InputSchema, CentorInputSchema, WellsDVTInputSchema, WellsPEInputSchema, HEARTInputSchema, CHA2DS2VAScInputSchema, GCSInputSchema, QSOFAInputSchema, AlvaradoInputSchema, GlasgowBlatchfordInputSchema, NIHSSInputSchema, SOFAInputSchema, PERCInputSchema, TIMIInputSchema, MELDInputSchema, GAD7InputSchema, GRACEInputSchema, HASBLEDInputSchema, ABCD2InputSchema]).describe('Input parameters for the selected calculator'),
 });
 
 export type CalculateClinicalScoreInput = z.infer<typeof CalculateClinicalScoreSchema>;
