@@ -6,20 +6,43 @@ An MCP server that:
 
 ## Installation
 
-1. setup
+### Quick Setup (Recommended)
+
+1. Clone and navigate to the repository:
+```bash
+git clone https://github.com/gholtzap/doctor-claude.git
+cd doctor-claude
+```
+
+2. Run the setup script:
+```bash
+./setup.sh
+```
+
+### Manual Setup
+
+1. Clone and navigate to the repository:
+```bash
+git clone https://github.com/gholtzap/doctor-claude.git
+cd doctor-claude
+```
+
+2. Install dependencies and build:
 ```bash
 npm install
 npm run build
 ```
 
-2. add to claude code:
+3. Add to Claude Code (must be run from the repository directory):
 ```bash
 claude mcp add --transport stdio doctor-claude -- node $(pwd)/build/index.js
 ```
+**Important:** Make sure you're in the `doctor-claude` directory when running the above command.
 
-3. {optional} set your patient profile (more info below)
+### Next Steps
 
-4. launch claude code and type `/mcp__doctor_claude__diagnostic_consultation`
+1. (Optional) Set your patient profile (see below)
+2. Launch Claude Code and type `/doctor-claude:diagnostic_consultation`
 
 ## Patient Profile
 
@@ -54,5 +77,5 @@ Engages Claude in a systematic medical consultation process. Automatically inclu
 
 **Usage in Claude Code:**
 ```bash
-/mcp__doctor_claude__diagnostic_consultation
+/doctor-claude:diagnostic_consultation
 ```
